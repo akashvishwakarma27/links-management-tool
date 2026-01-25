@@ -7,7 +7,7 @@ A comprehensive smart link management system for GSK with brand and country dete
 ```
 Links_management_tool/
 ├── admin-side-gsk.html      # Admin Dashboard (Production Ready)
-├── user-side-gsk.html       # User Search Interface (Production Ready)
+├── index.html               # User Search Interface (Production Ready)
 ├── admin-management.html    # Admin Management (Production Ready)
 ├── backend/                 # Spring Boot Backend
 ├── README.md               # This file
@@ -25,7 +25,7 @@ Links_management_tool/
 - ✅ **Themed Notifications** - #f36633 and #ffffff color scheme
 - ✅ **Responsive Design** - Works on all devices
 
-### User Interface (`user-side-gsk.html`)
+### User Interface (`index.html`)
 - ✅ **Smart Search** - Search by reference code, brand, country, or URL
 - ✅ **Brand/Country Detection** - Automatic extraction from URLs
 - ✅ **Responsive Layout** - Mobile-friendly design

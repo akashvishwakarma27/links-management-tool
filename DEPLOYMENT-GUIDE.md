@@ -95,7 +95,7 @@ railway up
 
 Update your frontend files to use the Railway URL:
 
-### In admin-side-gsk.html and user-side-gsk.html:
+### In admin-side-gsk.html and index.html:
 ```javascript
 const API_BASE_URL = 'https://your-app-name.railway.app/api';
 ```
