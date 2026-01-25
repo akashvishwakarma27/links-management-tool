@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GSK Smart Link Finder - Admin Management</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #ffffff;
+            color: #333333;
+            min-height: 100vh;
+        }
+
+        /* Header Styles */
+        .header {
+            background: #ffffff;
+            border-bottom: 3px solid #f36633;
+            padding: 15px 30px;
+            box-shadow: 0 2px 10px rgba(243, 102, 51, 0.1);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .header-logo {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f36633;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .header-logo:hover {
+            transform: scale(1.05);
+        }
+
+        .header-title h1 {
+            font-size: 24px;
+            color: #333333;
+            margin-bottom: 5px;
+        }
+
+        .header-title p {
+            font-size: 14px;
+            color: #666666;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .admin-name {
+            font-weight: 600;
+            color: #333333;
+            font-size: 16px;
+        }
+
+        .role-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .role-badge.super-admin {
+            background: #f36633;
+            color: white;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: #f36633;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #e5552b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(243, 102, 51, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #333333;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #f36633;
+            color: #f36633;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: #ffffff;
+            border: 2px solid #f36633;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(243, 102, 51, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #f36633;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Admin Table */
+        .table-container {
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            border: 2px solid #f36633;
+        }
+
+        .table-header {
+            background: #f36633;
+            color: white;
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .admin-table th {
+            background: #f8f9fa;
+            color: #333333;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            border-bottom: 2px solid #f36633;
+        }
+
+        .admin-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: middle;
+        }
+
+        .admin-table tr:hover {
+            background: rgba(243, 102, 51, 0.05);
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-action {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .empty-state-text {
+            font-size: 20px;
+            color: #666666;
+            margin-bottom: 10px;
+        }
+
+        .empty-state-subtext {
+            font-size: 14px;
+            color: #999999;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666666;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #f36633;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .stats-container {
+                grid-template-columns: 1fr;
+            }
+
+            .table-container {
+                overflow-x: auto;
+            }
+
+            .admin-table {
+                min-width: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="header-logo" onclick="goToDashboard()" title="Back to Dashboard">GSK</div>
+                <div class="header-title">
+                    <h1>Admin Management</h1>
+                    <p>Manage system administrators</p>
+                </div>
+            </div>
+            <div class="header-actions">
+                <span class="admin-name" id="adminName">Admin</span>
+                <span class="role-badge super-admin" id="roleBadge">Super Admin</span>
+                <button class="btn btn-secondary" onclick="goToDashboard()">🏠 Dashboard</button>
+                <button class="btn btn-primary" onclick="openRegisterModal()">➕ Add Admin</button>
+                <button class="btn btn-secondary" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-icon">👥</div>
+                <div class="stat-number" id="totalAdmins">0</div>
+                <div class="stat-label">Total Admins</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">🔧</div>
+                <div class="stat-number" id="regularAdmins">0</div>
+                <div class="stat-label">Regular Admins</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">👑</div>
+                <div class="stat-number" id="superAdmins">0</div>
+                <div class="stat-label">Super Admins</div>
+            </div>
+        </div>
+
+        <!-- Admin Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h2 class="table-title">All Administrators</h2>
+                <button class="btn btn-secondary" onclick="refreshAdmins()">🔄 Refresh</button>
+            </div>
+            
+            <div id="loadingState" class="loading" style="display: none;">
+                <div class="loading-spinner"></div>
+                <p>Loading administrators...</p>
+            </div>
+
+            <div id="emptyState" class="empty-state" style="display: none;">
+                <div class="empty-state-icon">👥</div>
+                <div class="empty-state-text">No administrators found</div>
+                <div class="empty-state-subtext">Add your first admin user to get started</div>
+            </div>
+
+            <table class="admin-table" id="adminTable" style="display: none;">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Username</th>
+                        <th>Email</th>
+                        <th>Role</th>
+                        <th>Created At</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                    <!-- Admins will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Register Admin Modal -->
+    <div id="registerModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Register New Admin</h3>
+                <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+            </div>
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="newUsername">Username</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="newEmail">Email</label>
+                    <input type="email" id="newEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeRegisterModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Register Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Styles -->
+    <style>
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 0;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            background: #f36633;
+            color: white;
+            padding: 20px;
+            border-radius: 15px 15px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .form-group {
+            padding: 20px;
+            padding-bottom: 0;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333333;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #f36633;
+        }
+
+        .form-actions {
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+    </style>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8080/api';
+        let authToken = localStorage.getItem('adminToken');
+        let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            if (!authToken || !currentUser || currentUser.role !== 'SUPER_ADMIN') {
+                alert('Access denied. Super Admin privileges required.');
+                window.location.href = 'admin-side-gsk.html';
+                return;
+            }
+
+            // Update header
+            document.getElementById('adminName').textContent = currentUser.username.split('_')[0];
+            
+            // Load admins
+            loadAdmins();
+            
+            // Setup form
+            document.getElementById('registerForm').addEventListener('submit', handleRegisterAdmin);
+        });
+
+        async function loadAdmins() {
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('adminTable');
+            
+            loadingState.style.display = 'block';
+            emptyState.style.display = 'none';
+            table.style.display = 'none';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/admins`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const admins = data.admins || [];
+                    displayAdmins(admins);
+                    updateStats(admins);
+                } else {
+                    throw new Error('Failed to load admins');
+                }
+            } catch (error) {
+                console.error('Load admins error:', error);
+                alert('Failed to load administrators. Please try again.');
+            } finally {
+                loadingState.style.display = 'none';
+            }
+        }
+
+        function displayAdmins(admins) {
+            const tbody = document.getElementById('adminTableBody');
+            const emptyState = document.getElementById('emptyState');
+            const table = document.getElementById('adminTable');
+
+            if (admins.length === 0) {
+                table.style.display = 'none';
+                emptyState.style.display = 'block';
+                return;
+            }
+
+            table.style.display = 'table';
+            emptyState.style.display = 'none';
+
+            tbody.innerHTML = admins.map(admin => {
+                const createdAt = new Date(admin.createdAt).toLocaleDateString() + ' ' + new Date(admin.createdAt).toLocaleTimeString();
+                const roleClass = admin.role === 'SUPER_ADMIN' ? 'super-admin' : 'admin';
+                const canDelete = admin.role !== 'SUPER_ADMIN';
+                
+                return `
+                <tr>
+                    <td><strong>${admin.id}</strong></td>
+                    <td style="font-weight: 600;">${admin.username}</td>
+                    <td>${admin.email}</td>
+                    <td>
+                        <span class="role-badge ${roleClass}">${admin.role}</span>
+                    </td>
+                    <td>${createdAt}</td>
+                    <td>
+                        <div class="action-buttons">
+                            ${canDelete ? `<button class="btn-action btn-delete" onclick="deleteAdmin(${admin.id}, '${admin.username}')" title="Delete Admin">🗑️ Delete</button>` : '<span style="color: #999; font-size: 12px;">Protected</span>'}
+                        </div>
+                    </td>
+                </tr>
+            `;
+            }).join('');
+        }
+
+        function updateStats(admins) {
+            const totalAdmins = admins.length;
+            const regularAdmins = admins.filter(admin => admin.role === 'ADMIN').length;
+            const superAdmins = admins.filter(admin => admin.role === 'SUPER_ADMIN').length;
+
+            document.getElementById('totalAdmins').textContent = totalAdmins;
+            document.getElementById('regularAdmins').textContent = regularAdmins;
+            document.getElementById('superAdmins').textContent = superAdmins;
+        }
+
+        async function deleteAdmin(adminId, adminUsername) {
+            if (!confirm(`Are you sure you want to delete admin user "${adminUsername}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/admins/${adminId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    alert(`Admin user "${adminUsername}" deleted successfully`);
+                    loadAdmins();
+                } else {
+                    const data = await response.json();
+                    alert(data.error || 'Failed to delete admin');
+                }
+            } catch (error) {
+                console.error('Delete admin error:', error);
+                alert('Failed to delete admin. Please try again.');
+            }
+        }
+
+        function openRegisterModal() {
+            document.getElementById('registerModal').style.display = 'flex';
+            document.getElementById('registerForm').reset();
+        }
+
+        function closeRegisterModal() {
+            document.getElementById('registerModal').style.display = 'none';
+        }
+
+        async function handleRegisterAdmin(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('newUsername').value;
+            const email = document.getElementById('newEmail').value;
+            const password = document.getElementById('newPassword').value;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/register-admin`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        username: username,
+                        email: email,
+                        password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(`Admin "${username}" registered successfully!`);
+                    closeRegisterModal();
+                    loadAdmins();
+                } else {
+                    alert('Registration failed: ' + (data.error || data.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Register admin error:', error);
+                alert('Registration failed: ' + error.message);
+            }
+        }
+
+        function refreshAdmins() {
+            loadAdmins();
+        }
+
+        function goToDashboard() {
+            window.location.href = 'admin-side-gsk.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            localStorage.removeItem('currentUser');
+            window.location.href = 'admin-side-gsk.html';
+        }
+    </script>
+</body>
+</html>
