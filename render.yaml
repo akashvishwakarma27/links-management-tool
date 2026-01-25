@@ -1,0 +1,31 @@
+services:
+  - type: web
+    name: gsk-link-finder
+    env: docker
+    repo: https://github.com/akashvishwakarma27/links-management-tool.git
+    rootDir: backend
+    plan: free
+    autoDeploy: true
+    dockerfilePath: ./Dockerfile
+    dockerContext: ./backend
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: SPRING_DATASOURCE_URL
+        fromDatabase:
+          name: gsk-postgres
+          property: connectionString
+      - key: SPRING_DATASOURCE_USERNAME
+        fromDatabase:
+          name: gsk-postgres
+          property: user
+      - key: SPRING_DATASOURCE_PASSWORD
+        fromDatabase:
+          name: gsk-postgres
+          property: password
+
+databases:
+  - name: gsk-postgres
+    plan: free
+    databaseName: link_manager
+    user: postgres
