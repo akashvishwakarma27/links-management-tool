@@ -108,13 +108,6 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- PostgreSQL for Railway Deployment -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <scope>runtime</scope>
-        </dependency>
-
         <!-- Mail Dependency -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
