@@ -74,6 +74,8 @@ public class SecurityConfig {
                 // Public endpoints - must be first and most specific
                 .requestMatchers("/auth/login").permitAll()
                 .requestMatchers("/auth/register-super-admin").permitAll()
+                .requestMatchers("/health").permitAll()
+                .requestMatchers("/health/**").permitAll()
                 .requestMatchers("/links/reference/**").permitAll()
                 .requestMatchers("/links/search/**").permitAll()
                 .requestMatchers("/public/**").permitAll()
