@@ -3,7 +3,9 @@
 ## 🌐 Live Deployment
 
 **Frontend URL**: https://linksmanagertool.netlify.app/
-**Backend URL**: https://srv-d5r6otc9c44c73e3k170.onrender.com/api
+**Backend URL**: https://links-management-tool.onrender.com/api
+**Render Service ID**: srv-d5r6otc9c44c73e3k170
+**Render Dashboard**: https://dashboard.render.com/web/srv-d5r6otc9c44c73e3k170/deploys/dep-d5rld30gjchc739qq5m0
 
 ## 🚀 Step 1: Prepare Your Backend
 

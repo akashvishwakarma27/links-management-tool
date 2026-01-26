@@ -5,7 +5,7 @@ A secure, web-based application designed to centrally store, manage, and retriev
 ## 🌐 Live Demo
 
 **Frontend**: https://linksmanagertool.netlify.app/
-**Backend**: https://srv-d5r6otc9c44c73e3k170.onrender.com/api
+**Backend**: https://links-management-tool.onrender.com/api
 
 ## 🚀 Features
 
