@@ -687,7 +687,7 @@
         function extractBrandFromUrl(fullUrl, referenceCode) {
             if (!fullUrl && !referenceCode) return 'Unknown';
             
-            // Common brand patterns in URLs (more comprehensive)
+            // Enhanced brand patterns for better matching
             const brandPatterns = [
                 { pattern: /singrix/i, name: 'Singrix' },
                 { pattern: /cafspan/i, name: 'Cafspan' },
@@ -715,17 +715,6 @@
                 { pattern: /sun.*pharma/i, name: 'Sun Pharma' },
                 { pattern: /lupin/i, name: 'Lupin' },
                 { pattern: /ranbaxy/i, name: 'Ranbaxy' },
-                { pattern: /cipla/i, name: 'Cipla' },
-                { pattern: /torrent/i, name: 'Torrent' },
-                { pattern: /aurabindo/i, name: 'Aurabindo' },
-                { pattern: /mankind/i, name: 'Mankind' },
-                { pattern: /zydus/i, name: 'Zydus' },
-                { pattern: /biocon/i, name: 'Biocon' },
-                { pattern: /dr.*reddy/i, name: 'Dr Reddy' },
-                { pattern: /sun.*pharma/i, name: 'Sun Pharma' },
-                { pattern: /lupin/i, name: 'Lupin' },
-                { pattern: /ranbaxy/i, name: 'Ranbaxy' },
-                { pattern: /cipla/i, name: 'Cipla' },
                 { pattern: /torrent/i, name: 'Torrent' },
                 { pattern: /aurabindo/i, name: 'Aurabindo' },
                 { pattern: /mankind/i, name: 'Mankind' },
@@ -733,18 +722,68 @@
                 { pattern: /biocon/i, name: 'Biocon' }
             ];
 
-            for (const pattern of brandPatterns) {
-                if (fullUrl && fullUrl.match(pattern.pattern)) {
-                    return pattern.name;
+            // First check URL for brand patterns
+            if (fullUrl) {
+                for (const pattern of brandPatterns) {
+                    if (fullUrl.match(pattern.pattern)) {
+                        return pattern.name;
+                    }
                 }
             }
 
-            // Check reference code for brand patterns
+            // Enhanced reference code brand extraction
             if (referenceCode) {
                 const refBrand = referenceCode.split('-')[0];
                 if (refBrand) {
                     const refBrandUpper = refBrand.toUpperCase();
+                    
+                    // Direct brand code matching
+                    const brandCodeMap = {
+                        'SINGRIX': 'Singrix',
+                        'SNG': 'Singrix',
+                        'CAFSPAN': 'Cafspan',
+                        'CAF': 'Cafspan',
+                        'GSK': 'GSK',
+                        'PFIZER': 'Pfizer',
+                        'PFZ': 'Pfizer',
+                        'NOVARTIS': 'Novartis',
+                        'NVS': 'Novartis',
+                        'ROCHE': 'Roche',
+                        'RHH': 'Roche',
+                        'SANOFI': 'Sanofi',
+                        'SNY': 'Sanofi',
+                        'BAYER': 'Bayer',
+                        'BAY': 'Bayer',
+                        'JNJ': 'J&J',
+                        'ASTRAZENECA': 'AstraZeneca',
+                        'AZN': 'AstraZeneca',
+                        'MERCK': 'Merck',
+                        'MRK': 'Merck',
+                        'ABBOTT': 'Abbott',
+                        'MEDTRONIC': 'Medtronic',
+                        'BMS': 'BMS',
+                        'LILLY': 'Eli Lilly',
+                        'AMGEN': 'Amgen',
+                        'GILEAD': 'Gilead',
+                        'CIPLA': 'Cipla',
+                        'REDDY': 'Dr Reddy',
+                        'SUN': 'Sun Pharma',
+                        'LUPIN': 'Lupin',
+                        'RANBAXY': 'Ranbaxy',
+                        'TORRENT': 'Torrent',
+                        'AURABINDO': 'Aurabindo',
+                        'MANKIND': 'Mankind',
+                        'ZYDUS': 'Zydus',
+                        'BIOCON': 'Biocon'
+                    };
+                    
+                    if (brandCodeMap[refBrandUpper]) {
+                        return brandCodeMap[refBrandUpper];
+                    }
+                    
+                    // Pattern matching for reference codes
                     if (refBrandUpper.includes('SINGRIX')) return 'Singrix';
+                    if (refBrandUpper.includes('CAFSPAN')) return 'Cafspan';
                     if (refBrandUpper.includes('VENTOLIN')) return 'Ventolin';
                     if (refBrandUpper.includes('PANADOL')) return 'Panadol';
                     if (refBrandUpper.includes('GSK')) return 'GSK';
@@ -758,45 +797,114 @@
         function extractCountryFromUrl(fullUrl, referenceCode) {
             if (!fullUrl && !referenceCode) return 'Unknown';
             
-            // Common country patterns in URLs
+            // Enhanced country patterns in URLs
             const countryPatterns = [
-                { pattern: /egypt/i, name: 'Egypt' },
-                { pattern: /india/i, name: 'India' },
-                { pattern: /pakistan/i, name: 'Pakistan' },
-                { pattern: /gulf/i, name: 'Gulf' },
-                { pattern: /saudi/i, name: 'Saudi Arabia' },
-                { pattern: /uae/i, name: 'UAE' },
-                { pattern: /uk/i, name: 'UK' },
-                { pattern: /usa/i, name: 'USA' },
-                { pattern: /europe/i, name: 'Europe' },
-                { pattern: /asia/i, name: 'Asia' },
-                { pattern: /africa/i, name: 'Africa' },
-                { pattern: /middle.*east/i, name: 'Middle East' }
+                { pattern: /egypt|eg/i, name: 'Egypt' },
+                { pattern: /india|in/i, name: 'India' },
+                { pattern: /pakistan|pk/i, name: 'Pakistan' },
+                { pattern: /gulf|gcc/i, name: 'Gulf' },
+                { pattern: /saudi|ksa|arabia/i, name: 'Saudi Arabia' },
+                { pattern: /uae|dubai|abu.*dhabi/i, name: 'UAE' },
+                { pattern: /uk|united.*kingdom|britain/i, name: 'UK' },
+                { pattern: /usa|united.*states|america/i, name: 'USA' },
+                { pattern: /europe|eu/i, name: 'Europe' },
+                { pattern: /asia|apac/i, name: 'Asia' },
+                { pattern: /africa|af/i, name: 'Africa' },
+                { pattern: /middle.*east|mena/i, name: 'Middle East' },
+                { pattern: /bangladesh|bd/i, name: 'Bangladesh' },
+                { pattern: /sri.*lanka|lk/i, name: 'Sri Lanka' },
+                { pattern: /nepal|np/i, name: 'Nepal' },
+                { pattern: /myanmar|mm|burma/i, name: 'Myanmar' },
+                { pattern: /thailand|th/i, name: 'Thailand' },
+                { pattern: /malaysia|my/i, name: 'Malaysia' },
+                { pattern: /singapore|sg/i, name: 'Singapore' },
+                { pattern: /indonesia|id/i, name: 'Indonesia' },
+                { pattern: /philippines|ph/i, name: 'Philippines' },
+                { pattern: /vietnam|vn/i, name: 'Vietnam' },
+                { pattern: /japan|jp/i, name: 'Japan' },
+                { pattern: /china|cn/i, name: 'China' },
+                { pattern: /korea|kr/i, name: 'Korea' },
+                { pattern: /australia|au/i, name: 'Australia' },
+                { pattern: /canada|ca/i, name: 'Canada' },
+                { pattern: /brazil|br/i, name: 'Brazil' },
+                { pattern: /mexico|mx/i, name: 'Mexico' },
+                { pattern: /russia|ru/i, name: 'Russia' }
             ];
 
-            for (const pattern of countryPatterns) {
-                if (fullUrl && fullUrl.match(pattern.pattern)) {
-                    return pattern.name;
+            // First check URL for country patterns
+            if (fullUrl) {
+                for (const pattern of countryPatterns) {
+                    if (fullUrl.match(pattern.pattern)) {
+                        return pattern.name;
+                    }
                 }
             }
 
-            // Check reference code for country patterns
+            // Enhanced reference code country extraction
             if (referenceCode) {
                 const refParts = referenceCode.split('-');
                 if (refParts.length > 1) {
                     const refCountry = refParts[1];
                     if (refCountry) {
                         const refCountryUpper = refCountry.toUpperCase();
+                        
+                        // Direct country code matching
+                        const countryCodeMap = {
+                            'EG': 'Egypt',
+                            'EGYPT': 'Egypt',
+                            'IN': 'India',
+                            'INDIA': 'India',
+                            'PK': 'Pakistan',
+                            'PAKISTAN': 'Pakistan',
+                            'GULF': 'Gulf',
+                            'GCC': 'Gulf',
+                            'SA': 'Saudi Arabia',
+                            'KSA': 'Saudi Arabia',
+                            'UAE': 'UAE',
+                            'UK': 'UK',
+                            'US': 'USA',
+                            'USA': 'USA',
+                            'EU': 'Europe',
+                            'ASIA': 'Asia',
+                            'AF': 'Africa',
+                            'BD': 'Bangladesh',
+                            'LK': 'Sri Lanka',
+                            'NP': 'Nepal',
+                            'MM': 'Myanmar',
+                            'TH': 'Thailand',
+                            'MY': 'Malaysia',
+                            'SG': 'Singapore',
+                            'ID': 'Indonesia',
+                            'PH': 'Philippines',
+                            'VN': 'Vietnam',
+                            'JP': 'Japan',
+                            'CN': 'China',
+                            'KR': 'Korea',
+                            'AU': 'Australia',
+                            'CA': 'Canada',
+                            'BR': 'Brazil',
+                            'MX': 'Mexico',
+                            'RU': 'Russia'
+                        };
+                        
+                        if (countryCodeMap[refCountryUpper]) {
+                            return countryCodeMap[refCountryUpper];
+                        }
+                        
+                        // Pattern matching for reference codes
                         if (refCountryUpper.includes('EG')) return 'Egypt';
                         if (refCountryUpper.includes('IN')) return 'India';
                         if (refCountryUpper.includes('PK')) return 'Pakistan';
                         if (refCountryUpper.includes('GULF')) return 'Gulf';
-                        if (refCountryUpper.includes('SA')) return 'Saudi';
+                        if (refCountryUpper.includes('SA') || refCountryUpper.includes('KSA')) return 'Saudi Arabia';
+                        if (refCountryUpper.includes('UAE')) return 'UAE';
+                        if (refCountryUpper.includes('UK')) return 'UK';
+                        if (refCountryUpper.includes('US') || refCountryUpper.includes('USA')) return 'USA';
                     }
                 }
             }
 
-            return 'Unknown';
+            return 'Global';
         }
 
         // Copy Link to Clipboard
