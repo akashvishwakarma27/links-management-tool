@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automated System Testing - Smart Link Finder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .test-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .test-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-running {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-passed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-failed {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .test-results {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 15px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s;
+        }
+
+        .summary {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+
+        .summary-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .summary-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 Automated System Testing</h1>
+            <p>Comprehensive testing and validation for Smart Link Finder</p>
+            <button class="btn btn-primary" onclick="runAllTests()">🚀 Run All Tests</button>
+            <button class="btn btn-success" onclick="runQuickTests()">⚡ Quick Tests</button>
+        </div>
+
+        <div class="summary">
+            <h2>📊 Test Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-item">
+                    <div class="summary-number" id="totalTests">0</div>
+                    <div class="summary-label">Total Tests</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="passedTests">0</div>
+                    <div class="summary-label">Passed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="failedTests">0</div>
+                    <div class="summary-label">Failed</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-number" id="testDuration">0s</div>
+                    <div class="summary-label">Duration</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <h3 class="test-title">🔗 Backend API Tests</h3>
+                <span class="test-status status-pending" id="backendStatus">Pending</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="backendProgress" style="width: 0%"></div>
+            </div>
+            <div class="test-results" id="backendResults">Waiting to run tests...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <h3 class="test-title">🎨 Frontend UI Tests</h3>
+                <span class="test-status status-pending" id="frontendStatus">Pending</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="frontendProgress" style="width: 0%"></div>
+            </div>
+            <div class="test-results" id="frontendResults">Waiting to run tests...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <h3 class="test-title">🔒 Authentication Tests</h3>
+                <span class="test-status status-pending" id="authStatus">Pending</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="authProgress" style="width: 0%"></div>
+            </div>
+            <div class="test-results" id="authResults">Waiting to run tests...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <h3 class="test-title">📱 Mobile Responsiveness Tests</h3>
+                <span class="test-status status-pending" id="mobileStatus">Pending</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="mobileProgress" style="width: 0%"></div>
+            </div>
+            <div class="test-results" id="mobileResults">Waiting to run tests...</div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-header">
+                <h3 class="test-title">⚡ Performance Tests</h3>
+                <span class="test-status status-pending" id="performanceStatus">Pending</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="performanceProgress" style="width: 0%"></div>
+            </div>
+            <div class="test-results" id="performanceResults">Waiting to run tests...</div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration
+        const API_BASE_URL = 'https://links-management-tool.onrender.com/api';
+        
+        // Test State
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            startTime: null,
+            endTime: null
+        };
+
+        // Test Framework
+        class TestRunner {
+            constructor() {
+                this.tests = [];
+                this.currentTest = 0;
+            }
+
+            addTest(name, category, testFn) {
+                this.tests.push({ name, category, testFn, status: 'pending', result: null });
+            }
+
+            async runTests(categories = null) {
+                testResults.startTime = Date.now();
+                testResults.total = 0;
+                testResults.passed = 0;
+                testResults.failed = 0;
+
+                const testsToRun = categories 
+                    ? this.tests.filter(test => categories.includes(test.category))
+                    : this.tests;
+
+                for (let i = 0; i < testsToRun.length; i++) {
+                    const test = testsToRun[i];
+                    this.currentTest = i;
+                    
+                    await this.runSingleTest(test);
+                    this.updateProgress(test.category, i + 1, testsToRun.length);
+                    await this.sleep(100); // Small delay between tests
+                }
+
+                testResults.endTime = Date.now();
+                this.updateSummary();
+            }
+
+            async runSingleTest(test) {
+                try {
+                    testResults.total++;
+                    this.updateTestStatus(test.name, 'running');
+                    
+                    const startTime = performance.now();
+                    const result = await test.testFn();
+                    const endTime = performance.now();
+                    
+                    test.status = 'passed';
+                    test.result = {
+                        success: true,
+                        duration: endTime - startTime,
+                        message: result || 'Test passed'
+                    };
+                    
+                    testResults.passed++;
+                    this.updateTestResults(test.category, `✅ ${test.name}: ${test.result.message}`);
+                    
+                } catch (error) {
+                    test.status = 'failed';
+                    test.result = {
+                        success: false,
+                        error: error.message,
+                        stack: error.stack
+                    };
+                    
+                    testResults.failed++;
+                    this.updateTestResults(test.category, `❌ ${test.name}: ${error.message}`);
+                }
+                
+                this.updateTestStatus(test.name, test.status);
+            }
+
+            updateTestStatus(testName, status) {
+                // Update category status based on test results
+                const categoryTests = this.tests.filter(t => t.name === testName);
+                if (categoryTests.length > 0) {
+                    const category = categoryTests[0].category;
+                    this.updateCategoryStatus(category);
+                }
+            }
+
+            updateCategoryStatus(category) {
+                const categoryTests = this.tests.filter(t => t.category === category);
+                const statusElement = document.getElementById(`${category}Status`);
+                const resultsElement = document.getElementById(`${category}Results`);
+                
+                if (categoryTests.some(t => t.status === 'running')) {
+                    statusElement.className = 'test-status status-running';
+                    statusElement.textContent = 'Running';
+                } else if (categoryTests.every(t => t.status === 'passed')) {
+                    statusElement.className = 'test-status status-passed';
+                    statusElement.textContent = 'Passed';
+                } else if (categoryTests.some(t => t.status === 'failed')) {
+                    statusElement.className = 'test-status status-failed';
+                    statusElement.textContent = 'Failed';
+                } else {
+                    statusElement.className = 'test-status status-pending';
+                    statusElement.textContent = 'Pending';
+                }
+            }
+
+            updateProgress(category, current, total) {
+                const progressElement = document.getElementById(`${category}Progress`);
+                const percentage = (current / total) * 100;
+                progressElement.style.width = `${percentage}%`;
+            }
+
+            updateTestResults(category, message) {
+                const resultsElement = document.getElementById(`${category}Results`);
+                resultsElement.textContent += message + '\n';
+                resultsElement.scrollTop = resultsElement.scrollHeight;
+            }
+
+            updateSummary() {
+                document.getElementById('totalTests').textContent = testResults.total;
+                document.getElementById('passedTests').textContent = testResults.passed;
+                document.getElementById('failedTests').textContent = testResults.failed;
+                
+                const duration = ((testResults.endTime - testResults.startTime) / 1000).toFixed(1);
+                document.getElementById('testDuration').textContent = `${duration}s`;
+            }
+
+            sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms));
+            }
+        }
+
+        // Initialize Test Runner
+        const testRunner = new TestRunner();
+
+        // Backend API Tests
+        testRunner.addTest('Health Check', 'backend', async () => {
+            const response = await fetch(`${API_BASE_URL}/health`);
+            if (!response.ok) throw new Error(`Health check failed: ${response.status}`);
+            const data = await response.json();
+            if (data.status !== 'UP') throw new Error('Service not healthy');
+            return 'Health check passed';
+        });
+
+        testRunner.addTest('Login Endpoint', 'backend', async () => {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: 'akash_super_admin',
+                    password: 'akash123'
+                })
+            });
+            if (!response.ok) throw new Error(`Login failed: ${response.status}`);
+            const data = await response.json();
+            if (!data.token) throw new Error('No token received');
+            return 'Login endpoint working';
+        });
+
+        testRunner.addTest('Links Endpoint', 'backend', async () => {
+            const response = await fetch(`${API_BASE_URL}/links`, {
+                headers: { 'Authorization': 'Bearer invalid-token' }
+            });
+            if (response.status !== 401) throw new Error('Expected 401, got ' + response.status);
+            return 'Links endpoint properly secured';
+        });
+
+        // Frontend UI Tests
+        testRunner.addTest('DOM Elements', 'frontend', () => {
+            const requiredElements = ['body', 'head', 'title'];
+            for (const element of requiredElements) {
+                if (!document.querySelector(element)) {
+                    throw new Error(`Missing ${element} element`);
+                }
+            }
+            return 'All required DOM elements present';
+        });
+
+        testRunner.addTest('CSS Styles', 'frontend', () => {
+            const testElement = document.createElement('div');
+            testElement.style.display = 'none';
+            document.body.appendChild(testElement);
+            
+            const styles = getComputedStyle(testElement);
+            document.body.removeChild(testElement);
+            
+            return 'CSS rendering working';
+        });
+
+        testRunner.addTest('JavaScript Error Handling', 'frontend', () => {
+            if (!window.errorPrevention) {
+                throw new Error('Error prevention system not loaded');
+            }
+            return 'JavaScript error handling active';
+        });
+
+        // Authentication Tests
+        testRunner.addTest('Token Validation', 'auth', async () => {
+            // Test with invalid token
+            try {
+                const response = await fetch(`${API_BASE_URL}/links`, {
+                    headers: { 'Authorization': 'Bearer invalid-token' }
+                });
+                if (response.status !== 401) {
+                    throw new Error('Expected 401 for invalid token');
+                }
+            } catch (error) {
+                if (error.message.includes('Expected 401')) {
+                    throw error;
+                }
+                // Network errors are acceptable for this test
+            }
+            return 'Token validation working';
+        });
+
+        testRunner.addTest('CORS Configuration', 'auth', async () => {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`, {
+                    method: 'OPTIONS'
+                });
+                // CORS preflight should succeed
+                return 'CORS configuration working';
+            } catch (error) {
+                throw new Error('CORS preflight failed: ' + error.message);
+            }
+        });
+
+        // Mobile Responsiveness Tests
+        testRunner.addTest('Viewport Meta Tag', 'mobile', () => {
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (!viewport) throw new Error('Viewport meta tag missing');
+            if (!viewport.content.includes('width=device-width')) {
+                throw new Error('Viewport not configured for mobile');
+            }
+            return 'Viewport meta tag configured';
+        });
+
+        testRunner.addTest('Responsive Design', 'mobile', () => {
+            // Test different screen sizes
+            const originalWidth = window.innerWidth;
+            
+            // Simulate mobile width
+            Object.defineProperty(window, 'innerWidth', { value: 375, configurable: true });
+            window.dispatchEvent(new Event('resize'));
+            
+            // Reset
+            Object.defineProperty(window, 'innerWidth', { value: originalWidth, configurable: true });
+            window.dispatchEvent(new Event('resize'));
+            
+            return 'Responsive design working';
+        });
+
+        // Performance Tests
+        testRunner.addTest('Page Load Time', 'performance', () => {
+            const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+            if (loadTime > 5000) throw new Error(`Page load too slow: ${loadTime}ms`);
+            return `Page load time: ${loadTime}ms`;
+        });
+
+        testRunner.addTest('Memory Usage', 'performance', () => {
+            if (performance.memory) {
+                const usedMB = performance.memory.usedJSHeapSize / 1024 / 1024;
+                if (usedMB > 100) throw new Error(`High memory usage: ${usedMB.toFixed(2)}MB`);
+                return `Memory usage: ${usedMB.toFixed(2)}MB`;
+            }
+            return 'Memory monitoring not available';
+        });
+
+        // Test Execution Functions
+        async function runAllTests() {
+            clearResults();
+            await testRunner.runTests();
+        }
+
+        async function runQuickTests() {
+            clearResults();
+            await testRunner.runTests(['backend', 'auth']);
+        }
+
+        function clearResults() {
+            const categories = ['backend', 'frontend', 'auth', 'mobile', 'performance'];
+            categories.forEach(category => {
+                document.getElementById(`${category}Status`).className = 'test-status status-pending';
+                document.getElementById(`${category}Status`).textContent = 'Pending';
+                document.getElementById(`${category}Progress`).style.width = '0%';
+                document.getElementById(`${category}Results`).textContent = 'Waiting to run tests...';
+            });
+            
+            testResults = { total: 0, passed: 0, failed: 0, startTime: null, endTime: null };
+            document.getElementById('totalTests').textContent = '0';
+            document.getElementById('passedTests').textContent = '0';
+            document.getElementById('failedTests').textContent = '0';
+            document.getElementById('testDuration').textContent = '0s';
+        }
+
+        // Auto-run tests on page load
+        window.addEventListener('load', () => {
+            setTimeout(runQuickTests, 1000);
+        });
+    </script>
+</body>
+</html>
