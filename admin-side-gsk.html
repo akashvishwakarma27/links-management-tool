@@ -1613,6 +1613,24 @@
         // API Configuration
         const API_BASE_URL = 'https://links-management-tool.onrender.com/api';
 
+        // Backend Health Check
+        async function checkBackendHealth() {
+            try {
+                console.log('Checking backend health at:', `${API_BASE_URL}/auth/login`);
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                console.log('Backend health check - Status:', response.status);
+                return response.ok;
+            } catch (error) {
+                console.error('Backend health check failed:', error);
+                return false;
+            }
+        }
+
         // State Management
         let authToken = localStorage.getItem('adminToken');
         let currentUser = null;
@@ -1639,7 +1657,7 @@
         const submitBtn = document.getElementById('submitBtn');
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             // Dashboard header elements - defined after DOM is loaded
             const dashboardTitle = document.querySelector('.header-title h1');
             const dashboardSubtitle = document.querySelector('.header-title p');
@@ -1649,6 +1667,13 @@
             window.dashboardTitle = dashboardTitle;
             window.dashboardSubtitle = dashboardSubtitle;
             window.roleBadge = roleBadge;
+            
+            // Check backend health first
+            const isBackendHealthy = await checkBackendHealth();
+            if (!isBackendHealthy) {
+                console.warn('Backend health check failed - login may not work');
+                showError('Backend service is currently unavailable. Please try again in a few minutes.');
+            }
             
             if (authToken) {
                 verifyToken();
@@ -1672,6 +1697,9 @@
             setLoading(loginBtn, loginBtnText, true);
             hideError();
 
+            console.log('Attempting login to:', `${API_BASE_URL}/auth/login`);
+            console.log('Login data:', { username, password: '***' });
+
             try {
                 const response = await fetch(`${API_BASE_URL}/auth/login`, {
                     method: 'POST',
@@ -1681,7 +1709,11 @@
                     body: JSON.stringify(loginData)
                 });
 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
                 const data = await response.json();
+                console.log('Response data:', data);
 
                 if (response.ok) {
                     authToken = data.token;
@@ -1693,11 +1725,17 @@
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
                     showDashboard();
                 } else {
-                    showError(data.error || data.message || 'Login failed');
+                    console.error('Login failed:', data);
+                    showError(data.error || data.message || `Login failed (${response.status})`);
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showError('Network error. Please try again.');
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
+                showError(`Network error: ${error.message}. Please check your connection and try again.`);
             } finally {
                 setLoading(loginBtn, loginBtnText, false);
             }
