@@ -150,7 +150,7 @@ public class PersistentDataInitializationService {
         for (Link link : sampleLinks) {
             try {
                 // Check if link already exists
-                if (!linkRepository.existsByReferenceCode(link.getReferenceCode())) {
+                if (!linkRepository.existsByReferenceCodeIgnoreCase(link.getReferenceCode())) {
                     // Note: createdAt and updatedAt are already set by the constructor
                     linkRepository.save(link);
                     logger.info("Created persistent link: {} - {}", link.getReferenceCode(), link.getDescription());
