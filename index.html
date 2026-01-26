@@ -691,6 +691,8 @@
             const brandPatterns = [
                 { pattern: /singrix/i, name: 'Singrix' },
                 { pattern: /cafspan/i, name: 'Cafspan' },
+                { pattern: /ventolin/i, name: 'Ventolin' },
+                { pattern: /panadol/i, name: 'Panadol' },
                 { pattern: /gsk/i, name: 'GSK' },
                 { pattern: /glaxo/i, name: 'GlaxoSmithKline' },
                 { pattern: /parke/i, name: 'Parker' },
@@ -722,8 +724,44 @@
                 { pattern: /biocon/i, name: 'Biocon' }
             ];
 
-            // First check URL for brand patterns
+            // Enhanced URL parsing - extract brand from path segments
             if (fullUrl) {
+                try {
+                    // Parse URL and get path segments
+                    const urlPath = new URL(fullUrl).pathname;
+                    const pathSegments = urlPath.split('/').filter(segment => segment.length > 0);
+                    
+                    // Look for brand in all path segments (not just first match)
+                    for (const segment of pathSegments) {
+                        const lowerSegment = segment.toLowerCase();
+                        
+                        // Check if segment matches any brand pattern
+                        for (const pattern of brandPatterns) {
+                            if (lowerSegment.match(pattern.pattern)) {
+                                return pattern.name;
+                            }
+                        }
+                    }
+                    
+                    // Additional brand extraction from filename patterns
+                    const fileName = pathSegments[pathSegments.length - 1];
+                    if (fileName) {
+                        const lowerFileName = fileName.toLowerCase();
+                        
+                        // Check filename for brand patterns
+                        for (const pattern of brandPatterns) {
+                            if (lowerFileName.match(pattern.pattern)) {
+                                return pattern.name;
+                            }
+                        }
+                    }
+                    
+                } catch (e) {
+                    // If URL parsing fails, fall back to string matching
+                    console.warn('URL parsing failed, using string matching:', e);
+                }
+                
+                // Fallback: check entire URL string for brand patterns
                 for (const pattern of brandPatterns) {
                     if (fullUrl.match(pattern.pattern)) {
                         return pattern.name;
@@ -743,6 +781,10 @@
                         'SNG': 'Singrix',
                         'CAFSPAN': 'Cafspan',
                         'CAF': 'Cafspan',
+                        'VENTOLIN': 'Ventolin',
+                        'VEN': 'Ventolin',
+                        'PANADOL': 'Panadol',
+                        'PAN': 'Panadol',
                         'GSK': 'GSK',
                         'PFIZER': 'Pfizer',
                         'PFZ': 'Pfizer',
