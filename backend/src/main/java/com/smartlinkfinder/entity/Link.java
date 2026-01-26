@@ -49,6 +49,16 @@ public class Link {
         this.status = "ACTIVE";
     }
     
+    public Link(String referenceCode, String fullUrl, String description, String brandName, String status) {
+        this.referenceCode = referenceCode;
+        this.fullUrl = fullUrl;
+        this.description = description;
+        this.brandName = brandName;
+        this.status = status;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+    
     // Getters and Setters
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
