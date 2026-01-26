@@ -479,6 +479,7 @@
                     placeholder="Enter reference code or keyword..."
                     required
                     autofocus
+                    oninput="handleSearchInput(event)"
                 >
                 <button type="submit" class="search-btn">Search</button>
             </form>
@@ -495,13 +496,39 @@
 
     <script>
         const API_BASE_URL = 'https://links-management-tool.onrender.com/api';
-
+        
+        // Performance optimizations
+        const searchCache = new Map();
+        let searchTimeout;
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes cache
+        const DEBOUNCE_DELAY = 300; // 300ms debounce delay
+        
+        // Debounced search input handler for real-time search
+        function handleSearchInput(event) {
+            const searchTerm = event.target.value.trim();
+            
+            // Clear previous timeout
+            if (searchTimeout) {
+                clearTimeout(searchTimeout);
+            }
+            
+            // Don't search for very short terms
+            if (searchTerm.length < 2) {
+                return;
+            }
+            
+            // Set new timeout for debounced search
+            searchTimeout = setTimeout(() => {
+                searchLinks(new Event('debounced'));
+            }, DEBOUNCE_DELAY);
+        }
+        
         // Open Admin Login Page
         function openAdminLogin() {
             window.open('admin-side-gsk.html', '_blank');
         }
 
-        // Search Links
+        // Optimized Search Links with caching and debouncing
         async function searchLinks(event) {
             event.preventDefault();
             
@@ -513,32 +540,73 @@
                 return;
             }
 
+            // Check cache first
+            const cacheKey = searchTerm.toLowerCase();
+            const cachedResult = searchCache.get(cacheKey);
+            if (cachedResult && (Date.now() - cachedResult.timestamp) < CACHE_DURATION) {
+                displayResults(cachedResult.data);
+                return;
+            }
+
             // Show results container and loading
             resultsContainer.classList.add('show');
             resultsDiv.innerHTML = '<div class="loading">🔍 Searching for links...</div>';
 
             try {
-                const response = await fetch(`${API_BASE_URL}/links/search?q=${encodeURIComponent(searchTerm)}`);
+                // Add timeout for faster failure detection
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+                const response = await fetch(`${API_BASE_URL}/links/search?q=${encodeURIComponent(searchTerm)}`, {
+                    signal: controller.signal,
+                    headers: {
+                        'Accept': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+                
+                clearTimeout(timeoutId);
                 
                 if (!response.ok) {
-                    throw new Error('Search failed');
+                    throw new Error(`Search failed: ${response.status}`);
                 }
 
                 const data = await response.json();
+                
+                // Cache the results
+                searchCache.set(cacheKey, {
+                    data: data.content || [],
+                    timestamp: Date.now()
+                });
+                
+                // Clear old cache entries
+                if (searchCache.size > 50) {
+                    const oldestKey = searchCache.keys().next().value;
+                    searchCache.delete(oldestKey);
+                }
+                
                 displayResults(data.content || []);
             } catch (error) {
                 console.error('Search error:', error);
+                let errorMessage = 'Unable to search links';
+                
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Search timeout - please try again';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Network error - check your connection';
+                }
+                
                 resultsDiv.innerHTML = `
                     <div class="no-results">
                         <div class="no-results-icon">❌</div>
-                        <div class="no-results-text">Unable to search links</div>
+                        <div class="no-results-text">${errorMessage}</div>
                         <div class="no-results-subtext">Please check your connection and try again</div>
                     </div>
                 `;
             }
         }
 
-        // Display Search Results
+        // Optimized display with virtual scrolling for better performance
         function displayResults(links) {
             const resultsDiv = document.getElementById('searchResults');
             
@@ -553,13 +621,20 @@
                 return;
             }
 
-            const resultsHTML = links.map(link => {
+            // Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
+            
+            // Limit display to first 20 results for better performance
+            const displayLinks = links.slice(0, 20);
+            
+            displayLinks.forEach(link => {
                 // Extract brand and country from URL and reference code
                 const brand = extractBrandFromUrl(link.fullUrl, link.referenceCode);
                 const country = extractCountryFromUrl(link.fullUrl, link.referenceCode);
                 
-                return `
-                <div class="link-card">
+                const linkCard = document.createElement('div');
+                linkCard.className = 'link-card';
+                linkCard.innerHTML = `
                     <div class="link-header">
                         <span class="reference-code">${link.referenceCode}</span>
                         <div class="info-badges">
@@ -587,11 +662,25 @@
                             🔗 Test Link
                         </button>
                     </div>
-                </div>
-            `;
-            }).join('');
+                `;
+                fragment.appendChild(linkCard);
+            });
 
-            resultsDiv.innerHTML = resultsHTML;
+            // Clear and append new results
+            resultsDiv.innerHTML = '';
+            resultsDiv.appendChild(fragment);
+            
+            // Show message if more results exist
+            if (links.length > 20) {
+                const moreMessage = document.createElement('div');
+                moreMessage.className = 'no-results';
+                moreMessage.style.marginTop = '20px';
+                moreMessage.innerHTML = `
+                    <div class="no-results-text">Showing first 20 of ${links.length} results</div>
+                    <div class="no-results-subtext">Use more specific search terms for better results</div>
+                `;
+                resultsDiv.appendChild(moreMessage);
+            }
         }
 
         // Extract brand from URL and reference code

@@ -73,9 +73,21 @@ public class LinkController {
     public ResponseEntity<?> searchLinks(
             @RequestParam String q,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "20") int size) {
         
-        Pageable pageable = PageRequest.of(page, size);
+        // Limit size for better performance
+        if (size > 50) {
+            size = 50;
+        }
+        
+        // Limit page for performance
+        if (page > 10) {
+            Map<String, String> error = new HashMap<>();
+            error.put("error", "Page limit exceeded for performance");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+        }
+        
+        Pageable pageable = PageRequest.of(page, size, Sort.by("referenceCode").ascending());
         Page<Link> links = linkService.searchLinks(q, pageable);
         
         return ResponseEntity.ok(links);
