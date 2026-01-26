@@ -1615,20 +1615,79 @@
 
         // Backend Health Check
         async function checkBackendHealth() {
-            try {
-                console.log('Checking backend health at:', `${API_BASE_URL}/auth/login`);
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'OPTIONS',
-                    headers: {
-                        'Content-Type': 'application/json',
+            console.log('Starting comprehensive backend health check...');
+            
+            const endpoints = [
+                `${API_BASE_URL}/auth/login`,
+                `${API_BASE_URL}/links/search?q=test`,
+                `${API_BASE_URL}/auth/register-super-admin`
+            ];
+            
+            for (const endpoint of endpoints) {
+                try {
+                    console.log(`Testing endpoint: ${endpoint}`);
+                    const response = await fetch(endpoint, {
+                        method: 'OPTIONS',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        mode: 'cors',
+                        credentials: 'omit'
+                    });
+                    
+                    console.log(`Endpoint ${endpoint} - Status: ${response.status}`);
+                    
+                    if (response.ok) {
+                        console.log('Backend health check passed');
+                        return true;
                     }
-                });
-                console.log('Backend health check - Status:', response.status);
-                return response.ok;
-            } catch (error) {
-                console.error('Backend health check failed:', error);
-                return false;
+                } catch (error) {
+                    console.error(`Health check failed for ${endpoint}:`, error);
+                }
             }
+            
+            console.warn('All backend health checks failed');
+            return false;
+        }
+
+        // Alternative backend URLs to try
+        const alternativeBackends = [
+            'https://links-management-tool.onrender.com/api',
+            'http://localhost:8080/api',
+            'https://srv-d5r6otc9c44c73e3k170.onrender.com/api'
+        ];
+
+        async function tryAlternativeBackends() {
+            console.log('Trying alternative backend URLs...');
+            
+            for (const backendUrl of alternativeBackends) {
+                try {
+                    console.log(`Trying backend: ${backendUrl}`);
+                    const response = await fetch(`${backendUrl}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            username: 'akash_super_admin',
+                            password: 'akash123'
+                        }),
+                        mode: 'cors',
+                        credentials: 'omit'
+                    });
+                    
+                    if (response.ok) {
+                        console.log(`Alternative backend works: ${backendUrl}`);
+                        return backendUrl;
+                    }
+                } catch (error) {
+                    console.error(`Backend ${backendUrl} failed:`, error);
+                }
+            }
+            
+            return null;
         }
 
         // State Management
@@ -1671,8 +1730,28 @@
             // Check backend health first
             const isBackendHealthy = await checkBackendHealth();
             if (!isBackendHealthy) {
-                console.warn('Backend health check failed - login may not work');
-                showError('Backend service is currently unavailable. Please try again in a few minutes.');
+                console.warn('Primary backend health check failed, trying alternatives...');
+                
+                const workingBackend = await tryAlternativeBackends();
+                if (workingBackend) {
+                    console.log(`Switching to working backend: ${workingBackend}`);
+                    // Update API_BASE_URL globally
+                    window.API_BASE_URL = workingBackend;
+                    // Update all references
+                    const scriptElements = document.querySelectorAll('script');
+                    scriptElements.forEach(script => {
+                        if (script.textContent.includes('const API_BASE_URL')) {
+                            script.textContent = script.textContent.replace(
+                                /const API_BASE_URL = ['"][^'"]+['"];?/,
+                                `const API_BASE_URL = '${workingBackend}';`
+                            );
+                        }
+                    });
+                } else {
+                    console.error('All backend endpoints failed');
+                    showError('Backend service is currently unavailable. Please try again in a few minutes or contact support.');
+                    return;
+                }
             }
             
             if (authToken) {
@@ -1694,23 +1773,63 @@
                 password: formData.get('password')
             };
 
+            // Validate input
+            if (!loginData.username || !loginData.password) {
+                showError('Please enter both username and password');
+                return;
+            }
+
             setLoading(loginBtn, loginBtnText, true);
             hideError();
 
             console.log('Attempting login to:', `${API_BASE_URL}/auth/login`);
-            console.log('Login data:', { username, password: '***' });
+            console.log('Login data:', { username: loginData.username, password: '***' });
 
             try {
-                const response = await fetch(`${API_BASE_URL}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify(loginData)
-                });
+                // Try with different fetch configurations
+                let response;
+                let attempts = 0;
+                const maxAttempts = 3;
+                
+                while (attempts < maxAttempts) {
+                    try {
+                        response = await fetch(`${API_BASE_URL}/auth/login`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                            },
+                            body: JSON.stringify(loginData),
+                            mode: 'cors',
+                            credentials: 'omit'
+                        });
+                        
+                        if (response.ok || response.status === 400 || response.status === 401) {
+                            break; // Got a valid response
+                        }
+                        
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            console.log(`Attempt ${attempts} failed, retrying...`);
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        }
+                    } catch (fetchError) {
+                        console.error(`Attempt ${attempts + 1} fetch error:`, fetchError);
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                        } else {
+                            throw fetchError;
+                        }
+                    }
+                }
 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', response.headers);
+                console.log('Final response status:', response.status);
+                console.log('Final response headers:', response.headers);
+
+                if (!response) {
+                    throw new Error('No response received after multiple attempts');
+                }
 
                 const data = await response.json();
                 console.log('Response data:', data);
@@ -1723,10 +1842,12 @@
                     };
                     localStorage.setItem('adminToken', authToken);
                     localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    console.log('Login successful, token stored');
                     showDashboard();
                 } else {
                     console.error('Login failed:', data);
-                    showError(data.error || data.message || `Login failed (${response.status})`);
+                    const errorMessage = data.error || data.message || data.error_description || `Login failed (${response.status})`;
+                    showError(errorMessage);
                 }
             } catch (error) {
                 console.error('Login error:', error);
@@ -1735,7 +1856,20 @@
                     stack: error.stack,
                     name: error.name
                 });
-                showError(`Network error: ${error.message}. Please check your connection and try again.`);
+                
+                // Provide more specific error messages
+                let errorMessage = 'Network error. Please try again.';
+                if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+                } else if (error.message.includes('CORS')) {
+                    errorMessage = 'CORS error. Please contact support.';
+                } else if (error.message.includes('timeout')) {
+                    errorMessage = 'Request timed out. Please try again.';
+                } else {
+                    errorMessage = `Login error: ${error.message}`;
+                }
+                
+                showError(errorMessage);
             } finally {
                 setLoading(loginBtn, loginBtnText, false);
             }
