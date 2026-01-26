@@ -1,4 +1,9 @@
-# Railway Deployment Guide for GSK Smart Link Finder
+# Deployment Guide for GSK Smart Link Finder
+
+## 🌐 Live Deployment
+
+**Frontend URL**: https://linksmanagertool.netlify.app/
+**Backend URL**: https://srv-d5r6otc9c44c73e3k170.onrender.com/api
 
 ## 🚀 Step 1: Prepare Your Backend
 

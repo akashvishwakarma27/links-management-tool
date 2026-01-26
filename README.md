@@ -2,6 +2,11 @@
 
 A secure, web-based application designed to centrally store, manage, and retrieve important links using short, human-readable reference codes (e.g., `PI-16282`).
 
+## 🌐 Live Demo
+
+**Frontend**: https://linksmanagertool.netlify.app/
+**Backend**: https://srv-d5r6otc9c44c73e3k170.onrender.com/api
+
 ## 🚀 Features
 
 ### Admin Panel (Full Access)
