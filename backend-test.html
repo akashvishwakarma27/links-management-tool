@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Backend Connection Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; }
+        pre { background: #f8f9fa; padding: 10px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>Backend Connection Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Login Endpoint</h2>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="loginResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Protected Endpoint</h2>
+        <button onclick="testProtected()">Test Protected</button>
+        <div id="protectedResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Test CORS</h2>
+        <button onclick="testCORS()">Test CORS</button>
+        <div id="corsResult"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4. Network Info</h2>
+        <button onclick="showNetworkInfo()">Show Network Info</button>
+        <div id="networkInfo"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'https://links-management-tool.onrender.com/api';
+        
+        async function testLogin() {
+            const resultDiv = document.getElementById('loginResult');
+            resultDiv.innerHTML = '<p>Testing login...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        username: 'akash_super_admin',
+                        password: 'akash123'
+                    }),
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <h3>Login Test Result</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Success:</strong> ${response.ok}</p>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        ${response.ok ? `<p><strong>Token:</strong> ${data.token ? 'Received' : 'Not received'}</p>` : ''}
+                    </div>
+                `;
+                
+                if (response.ok && data.token) {
+                    localStorage.setItem('testToken', data.token);
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Login Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Stack:</strong></p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testProtected() {
+            const resultDiv = document.getElementById('protectedResult');
+            const token = localStorage.getItem('testToken');
+            
+            if (!token) {
+                resultDiv.innerHTML = '<div class="error"><p>Please run login test first</p></div>';
+                return;
+            }
+            
+            resultDiv.innerHTML = '<p>Testing protected endpoint...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/links`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                const data = await response.json();
+                
+                resultDiv.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <h3>Protected Endpoint Test Result</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Success:</strong> ${response.ok}</p>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>Protected Endpoint Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Stack:</strong></p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        async function testCORS() {
+            const resultDiv = document.getElementById('corsResult');
+            resultDiv.innerHTML = '<p>Testing CORS...</p>';
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    mode: 'cors',
+                    credentials: 'omit'
+                });
+                
+                resultDiv.innerHTML = `
+                    <div class="${response.ok ? 'success' : 'error'}">
+                        <h3>CORS Test Result</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Success:</strong> ${response.ok}</p>
+                        <p><strong>CORS Headers:</strong></p>
+                        <pre>${JSON.stringify(Object.fromEntries(response.headers.entries()), null, 2)}</pre>
+                    </div>
+                `;
+                
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error">
+                        <h3>CORS Test Error</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                        <p><strong>Stack:</strong></p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+            }
+        }
+        
+        function showNetworkInfo() {
+            const resultDiv = document.getElementById('networkInfo');
+            
+            resultDiv.innerHTML = `
+                <div class="success">
+                    <h3>Network Information</h3>
+                    <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                    <p><strong>Platform:</strong> ${navigator.platform}</p>
+                    <p><strong>Online:</strong> ${navigator.onLine}</p>
+                    <p><strong>API Base URL:</strong> ${API_BASE_URL}</p>
+                    <p><strong>Current Time:</strong> ${new Date().toISOString()}</p>
+                    <p><strong>Screen Width:</strong> ${screen.width}px</p>
+                    <p><strong>Screen Height:</strong> ${screen.height}px</p>
+                    <p><strong>Mobile:</strong> ${/Mobi|Android/i.test(navigator.userAgent) ? 'Yes' : 'No'}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
