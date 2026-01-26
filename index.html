@@ -3,708 +3,106 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GSK Smart Link Finder</title>
+    <title>Smart Link Finder - Redirect to Ultimate Login</title>
     <style>
-        * {
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Mobile-First Base Styles */
-        html {
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #ffffff;
             min-height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            padding: 20px;
-            -webkit-text-size-adjust: 100%;
-            -ms-text-size-adjust: 100%;
+            color: white;
         }
-
-        /* Mobile-First Responsive Design */
-        
-        /* Base Mobile Styles (default) */
-        .container {
-            width: 100%;
-            max-width: 100%;
-            padding: 0 15px;
+        .redirect-container {
             text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
         }
-
         .logo {
-            font-size: 2.5rem;
-            font-weight: bold;
-            color: #f36633;
+            font-size: 64px;
             margin-bottom: 20px;
-            cursor: pointer;
-            transition: transform 0.3s ease;
-            text-align: center;
+            animation: pulse 2s infinite;
         }
-
-        .search-container {
-            background: #ffffff;
-            border: 2px solid #f36633;
-            border-radius: 12px;
-            padding: 20px 15px;
-            box-shadow: 0 10px 30px rgba(243, 102, 51, 0.1);
-            margin: 0 auto;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
-
-        .search-title {
-            font-size: 1.2rem;
-            color: #f36633;
+        h1 {
+            font-size: 28px;
             margin-bottom: 20px;
             font-weight: 600;
         }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #f36633;
-            border-radius: 10px;
-            font-size: 16px; /* Prevents zoom on iOS */
-            transition: all 0.3s ease;
-            background: #ffffff;
-            color: #333;
-            margin: 0 auto 15px;
-            display: block;
+        p {
+            font-size: 18px;
+            margin-bottom: 30px;
+            opacity: 0.9;
         }
-
-        .search-btn {
-            background: #f36633;
-            color: #ffffff;
-            border: none;
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 15px 30px;
             border-radius: 10px;
-            padding: 12px 20px;
             font-size: 16px;
             font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .search-form {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .search-input:focus {
-            outline: none;
-            border-color: #f36633;
-            box-shadow: 0 0 0 3px rgba(243, 102, 51, 0.1);
-        }
-
-        .search-input::placeholder {
-            color: #999;
-        }
-
-        /* Tablet and Desktop Styles */
-        @media (min-width: 768px) {
-            body {
-                padding: 20px;
-            }
-
-            .container {
-                max-width: 1000px;
-                padding: 0;
-            }
-
-            .logo {
-                font-size: 3.5rem;
-                margin-bottom: 25px;
-            }
-
-            .search-container {
-                padding: 30px 25px;
-                border-radius: 15px;
-                max-width: 600px;
-            }
-
-            .search-title {
-                font-size: 1.4rem;
-                margin-bottom: 25px;
-            }
-
-            .search-input {
-                width: 70%;
-                padding: 15px 20px;
-                font-size: 1rem;
-            }
-
-            .search-btn {
-                padding: 15px 25px;
-                font-size: 1rem;
-                width: auto;
-                min-width: 150px;
-            }
-
-            .search-form {
-                flex-direction: row;
-                align-items: center;
-                justify-content: center;
-                gap: 15px;
-            }
-        }
-
-        @media (min-width: 1024px) {
-            .logo {
-                font-size: 4rem;
-                margin-bottom: 30px;
-            }
-
-            .search-container {
-                padding: 40px;
-            }
-
-            .search-title {
-                font-size: 1.5rem;
-            }
-        }
-
-        .search-btn:hover {
-            background: #e5552b;
-            transform: translateY(-2px);
-        }
-
-        .results-container {
-            margin-top: 30px;
-            background: #ffffff;
-            border: 2px solid #f36633;
-            border-radius: 15px;
-            padding: 40px;
-            box-shadow: 0 10px 30px rgba(243, 102, 51, 0.1);
-            display: none;
-            max-width: 1200px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .results-container.show {
-            display: block;
-        }
-
-        .results-title {
-            font-size: 1.2rem;
-            color: #f36633;
-            margin-bottom: 20px;
-            font-weight: 600;
-        }
-
-        .link-card {
-            background: #ffffff;
-            border: 1px solid #f36633;
-            border-radius: 15px;
-            padding: 25px;
-            margin-bottom: 20px;
-            text-align: left;
-            transition: all 0.3s ease;
-            border-left: 4px solid #f36633;
-        }
-
-        .link-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(243, 102, 51, 0.2);
-        }
-
-        .link-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .reference-code {
-            background: #f36633;
-            color: #ffffff;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .info-badges {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .info-badge {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-
-        .info-label {
-            font-size: 0.7rem;
-            color: #666;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .brand-info {
-            background: #e9ecef;
-            color: #333;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .country-info {
-            background: #d4edda;
-            color: #155724;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-
-        .link-url-container {
-            margin-bottom: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 10px;
-            border: 1px solid #e9ecef;
-        }
-
-        .link-url-label {
-            font-size: 0.8rem;
-            color: #666;
-            margin-bottom: 8px;
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .link-url {
-            color: #f36633;
             text-decoration: none;
-            font-weight: 500;
             display: inline-block;
-            transition: color 0.3s ease;
-            word-break: break-all;
-            font-size: 0.95rem;
-        }
-
-        .link-url:hover {
-            color: #e5552b;
-            text-decoration: underline;
-        }
-
-        .link-actions {
-            display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .btn-action {
-            background: #f36633;
-            color: #ffffff;
-            border: none;
-            border-radius: 6px;
-            padding: 12px 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            cursor: pointer;
             transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            flex: 1;
-            min-width: 80px;
-            max-width: 120px;
-            justify-content: center;
-            height: 45px;
+            margin: 10px;
         }
-
-        .btn-action:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
         }
-
-        .btn-copy {
-            background: #28a745;
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-top: 3px solid white;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
         }
-
-        .btn-copy:hover {
-            background: #218838;
-        }
-
-        .btn-test {
-            background: #007bff;
-        }
-
-        .btn-test:hover {
-            background: #0056b3;
-        }
-
-        /* Notification Styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #ffffff;
-            border: 2px solid #f36633;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 5px 20px rgba(243, 102, 51, 0.3);
-            z-index: 1000;
-            max-width: 300px;
-            animation: slideIn 0.3s ease;
-        }
-
-        .notification.success {
-            border-color: #28a745;
-            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.3);
-        }
-
-        .notification.info {
-            border-color: #007bff;
-            box-shadow: 0 5px 20px rgba(0, 123, 255, 0.3);
-        }
-
-        .notification-content h4 {
-            color: #333;
-            margin: 0 0 5px 0;
-            font-size: 0.9rem;
-        }
-
-        .notification-content p {
-            color: #666;
-            margin: 0;
-            font-size: 0.8rem;
-        }
-
-        .notification-close {
-            position: absolute;
-            top: 5px;
-            right: 10px;
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #999;
-        }
-
-        @keyframes slideIn {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
-        }
-
-        .no-results {
-            text-align: center;
-            padding: 40px;
-            color: #666;
-        }
-
-        .no-results-icon {
-            font-size: 3rem;
-            margin-bottom: 15px;
-            color: #f36633;
-        }
-
-        .no-results-text {
-            font-size: 1.1rem;
-            color: #f36633;
-            margin-bottom: 10px;
-            font-weight: 600;
-        }
-
-        .no-results-subtext {
-            color: #666;
-            font-size: 0.9rem;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 40px;
-            color: #f36633;
-        }
-
-        /* Touch-friendly improvements */
-        @media (hover: none) and (pointer: coarse) {
-            .logo:hover {
-                transform: none;
-            }
-            
-            .logo:active {
-                transform: scale(0.95);
-            }
-
-            .btn-action:hover {
-                transform: none;
-            }
-            
-            .btn-action:active {
-                transform: scale(0.98);
-            }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <!-- Logo -->
-        <div class="logo" onclick="openAdminLogin()" title="Click to open Admin Login">
-            GSK
-        </div>
-
-        <!-- Search Container -->
-        <div class="search-container">
-            <h2 class="search-title">🔍 Search Smart Links</h2>
-            <form class="search-form" onsubmit="searchLinks(event)">
-                <input 
-                    type="text" 
-                    class="search-input" 
-                    id="searchInput" 
-                    placeholder="Enter reference code or keyword..."
-                    required
-                    autofocus
-                >
-                <button type="submit" class="search-btn">Search</button>
-            </form>
-        </div>
-
-        <!-- Results Container -->
-        <div class="results-container" id="resultsContainer">
-            <h3 class="results-title">📋 Search Results</h3>
-            <div id="searchResults">
-                <!-- Results will be displayed here -->
-            </div>
-        </div>
+    <div class="redirect-container">
+        <div class="logo">🔗</div>
+        <h1>Smart Link Finder</h1>
+        <p>Redirecting to Ultimate Login System...</p>
+        <div class="spinner"></div>
+        <p style="font-size: 14px; opacity: 0.7;">
+            If you are not redirected automatically, 
+            <a href="ultimate-login.html" class="btn" style="display: inline; margin: 0; padding: 5px 10px; font-size: 12px;">click here</a>
+        </p>
     </div>
 
     <script>
-        const API_BASE_URL = 'https://links-management-tool.onrender.com/api';
+        // Auto-redirect to ultimate login
+        setTimeout(() => {
+            window.location.href = 'ultimate-login.html';
+        }, 2000);
 
-        // Open Admin Login Page
-        function openAdminLogin() {
-            window.open('admin-side-gsk.html', '_blank');
-        }
-
-        // Search Links
-        async function searchLinks(event) {
-            event.preventDefault();
-            
-            const searchTerm = document.getElementById('searchInput').value.trim();
-            const resultsDiv = document.getElementById('searchResults');
-            const resultsContainer = document.getElementById('resultsContainer');
-            
-            if (!searchTerm) {
-                return;
+        // Fallback redirect
+        document.addEventListener('click', function(e) {
+            if (e.target.tagName === 'A' && e.target.href.includes('ultimate-login.html')) {
+                window.location.href = 'ultimate-login.html';
             }
-
-            // Show results container and loading
-            resultsContainer.classList.add('show');
-            resultsDiv.innerHTML = '<div class="loading">🔍 Searching for links...</div>';
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/links/search?q=${encodeURIComponent(searchTerm)}`);
-                
-                if (!response.ok) {
-                    throw new Error('Search failed');
-                }
-
-                const data = await response.json();
-                displayResults(data.content || []);
-            } catch (error) {
-                console.error('Search error:', error);
-                resultsDiv.innerHTML = `
-                    <div class="no-results">
-                        <div class="no-results-icon">❌</div>
-                        <div class="no-results-text">Unable to search links</div>
-                        <div class="no-results-subtext">Please check your connection and try again</div>
-                    </div>
-                `;
-            }
-        }
-
-        // Display Search Results
-        function displayResults(links) {
-            const resultsDiv = document.getElementById('searchResults');
-            
-            if (links.length === 0) {
-                resultsDiv.innerHTML = `
-                    <div class="no-results">
-                        <div class="no-results-icon">🔍</div>
-                        <div class="no-results-text">No links found</div>
-                        <div class="no-results-subtext">Try searching with different reference codes or keywords like ADMIN, PI-, GSK, or TEST</div>
-                    </div>
-                `;
-                return;
-            }
-
-            const resultsHTML = links.map(link => {
-                // Extract brand and country from URL and reference code
-                const brand = extractBrandFromUrl(link.fullUrl, link.referenceCode);
-                const country = extractCountryFromUrl(link.fullUrl, link.referenceCode);
-                
-                return `
-                <div class="link-card">
-                    <div class="link-header">
-                        <span class="reference-code">${link.referenceCode}</span>
-                        <div class="info-badges">
-                            <div class="info-badge">
-                                <span class="info-label">Brand</span>
-                                <span class="brand-info">${brand}</span>
-                            </div>
-                            <div class="info-badge">
-                                <span class="info-label">Country</span>
-                                <span class="country-info">${country}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="link-url-container">
-                        <div class="link-url-label">Link</div>
-                        <a href="${link.fullUrl}" target="_blank" class="link-url">
-                            🔗 ${link.fullUrl.length > 80 ? link.fullUrl.substring(0, 80) + '...' : link.fullUrl}
-                        </a>
-                    </div>
-                    <div class="link-actions">
-                        <button class="btn-action btn-copy" onclick="copyLink('${link.fullUrl}', '${link.referenceCode}')" title="Copy Link">
-                            📋 Copy Link
-                        </button>
-                        <button class="btn-action btn-test" onclick="testLink('${link.fullUrl}', '${link.referenceCode}')" title="Test Link">
-                            🔗 Test Link
-                        </button>
-                    </div>
-                </div>
-            `;
-            }).join('');
-
-            resultsDiv.innerHTML = resultsHTML;
-        }
-
-        // Extract brand from URL and reference code
-        function extractBrandFromUrl(fullUrl, referenceCode) {
-            if (!fullUrl && !referenceCode) return 'Unknown';
-            
-            // Common brand patterns in URLs (more comprehensive)
-            const brandPatterns = [
-                { pattern: /singrix/i, name: 'Singrix' },
-                { pattern: /cafspan/i, name: 'Cafspan' },
-                { pattern: /gsk/i, name: 'GSK' },
-                { pattern: /glaxo/i, name: 'GlaxoSmithKline' },
-                { pattern: /parke/i, name: 'Parker' },
-                { pattern: /pfizer/i, name: 'Pfizer' },
-                { pattern: /novartis/i, name: 'Novartis' },
-                { pattern: /roche/i, name: 'Roche' },
-                { pattern: /sanofi/i, name: 'Sanofi' },
-                { pattern: /bayer/i, name: 'Bayer' },
-                { pattern: /johnson/i, name: 'Johnson' },
-                { pattern: /j&j/i, name: 'J&J' },
-                { pattern: /astrazeneca/i, name: 'AstraZeneca' },
-                { pattern: /merck/i, name: 'Merck' },
-                { pattern: /abbott/i, name: 'Abbott' },
-                { pattern: /medtronic/i, name: 'Medtronic' },
-                { pattern: /bms/i, name: 'BMS' },
-                { pattern: /bristol/i, name: 'Bristol-Myers' },
-                { pattern: /eli.*lilly/i, name: 'Eli Lilly' },
-                { pattern: /amgen/i, name: 'Amgen' },
-                { pattern: /gilead/i, name: 'Gilead' },
-                { pattern: /cipla/i, name: 'Cipla' },
-                { pattern: /dr.*reddy/i, name: 'Dr Reddy' },
-                { pattern: /sun.*pharma/i, name: 'Sun Pharma' },
-                { pattern: /lupin/i, name: 'Lupin' },
-                { pattern: /torrent/i, name: 'Torrent' },
-                { pattern: /aurobindo/i, name: 'Aurobindo' },
-                { pattern: /cadila/i, name: 'Cadila' },
-                { pattern: /biocon/i, name: 'Biocon' },
-                { pattern: /getz/i, name: 'Getz' },
-                {pattern: /pharmaco/i, name: 'Pharmaco' },
-                {pattern: /sante/i, name: 'Sante' },
-                {pattern: /martin/i, name: 'Martin' },
-                {pattern: /dow/i, name: 'Dow' },
-                {pattern: /abbvie/i, name: 'AbbVie' }
-            ];
-            
-            // Try to extract from URL path segments first (highest priority for country/brand/pi pattern)
-            if (fullUrl) {
-                try {
-                    const urlPath = new URL(fullUrl).pathname;
-                    const pathSegments = urlPath.split('/').filter(segment => segment.length > 0);
-                    
-                    // Special handling for country/brand/pi pattern
-                    // Look for pattern like /pakistan/singrix/pi_33001_v1.pdf
-                    for (let i = 0; i < pathSegments.length - 1; i++) {
-                        const currentSegment = pathSegments[i].toLowerCase();
-                        const nextSegment = pathSegments[i + 1].toLowerCase();
-                        
-                        // If current is country and next looks like brand
-                        if (isCountryCode(currentSegment) || isCountryName(currentSegment)) {
-                            if (nextSegment.length >= 3 && !isCountryCode(nextSegment) && !isPiCode(nextSegment)) {
-                                const brandName = nextSegment.split('-').map(word => 
-                                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                                ).join(' ');
-                                
-                                if (looksLikeBrandName(brandName)) {
-                                    return brandName;
-                                }
-                            }
-                        }
-                    }
-                    
-                    // Look for brand in path segments (usually after country code)
-                    for (let i = 0; i < pathSegments.length; i++) {
-                        const segment = pathSegments[i].toLowerCase();
-                        
-                        // Check if segment matches any brand pattern
-                        for (const { pattern, name } of brandPatterns) {
-                            if (segment.match(pattern)) {
-                                return name;
-                            }
-                        }
-                        
-                        // Check if segment is a known brand name (3+ chars, not a country code)
-                        if (segment.length >= 3 && !isCountryCode(segment)) {
-                            // Capitalize first letter of each word
-                            const brandName = segment.split('-').map(word => 
-                                word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                            ).join(' ');
-                            
-                            // Check if it looks like a brand name
-                            if (looksLikeBrandName(brandName)) {
-                                return brandName;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    // URL parsing failed, continue with other methods
-                }
-                
-                // Fallback: try to match patterns in full URL
-                for (const { pattern, name } of brandPatterns) {
-                    if (fullUrl.match(pattern)) {
-                        return name;
-                    }
-                }
-            }
-            
-            // Then try to extract from reference code (more comprehensive)
-            if (referenceCode) {
-                const codeBrand = referenceCode.split('-')[0];
-                if (codeBrand && codeBrand.length >= 2) {
-                    // Check if it matches known brand codes
-                    const brandCodeMap = {
+        });
+    </script>
+</body>
+</html>
                         'CAF': 'Cafspan',
                         'CAFSPAN': 'Cafspan',
                         'SNG': 'Singrix',

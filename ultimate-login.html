@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Link Finder - Ultimate Login</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .logo-section {
+            margin-bottom: 30px;
+        }
+
+        .logo {
+            font-size: 48px;
+            margin-bottom: 10px;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .app-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .app-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            font-weight: 400;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-input::placeholder {
+            color: #95a5a6;
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .button-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        .button-spinner {
+            display: none;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alert-error {
+            background: #fee;
+            color: #c33;
+            border: 1px solid #fcc;
+        }
+
+        .alert-success {
+            background: #efe;
+            color: #3c3;
+            border: 1px solid #cfc;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+
+        .alert-icon {
+            font-size: 16px;
+        }
+
+        .user-mode-link {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #667eea;
+            padding: 8px 16px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .user-mode-link:hover {
+            background: white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .footer {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e8ed;
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        .help-text {
+            margin-bottom: 10px;
+        }
+
+        .credentials {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #2c3e50;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-online { background: #28a745; }
+        .status-offline { background: #dc3545; }
+        .status-warning { background: #ffc107; }
+
+        .debug-panel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            font-family: monospace;
+            font-size: 12px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .debug-panel.show {
+            display: block;
+        }
+
+        .debug-toggle {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .debug-toggle:hover {
+            background: #5a6268;
+        }
+
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 10px;
+            }
+
+            .user-mode-link {
+                position: static;
+                display: block;
+                margin-bottom: 20px;
+                text-align: center;
+            }
+
+            .logo {
+                font-size: 40px;
+            }
+
+            .app-title {
+                font-size: 20px;
+            }
+        }
+
+        /* Error prevention styles */
+        .error-boundary {
+            border: 2px solid #e74c3c;
+            background: #fee;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .safe-mode {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+            font-size: 12px;
+            display: none;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+    </style>
+</head>
+<body>
+    <!-- User Mode Link -->
+    <a href="index-clean.html" class="user-mode-link">🔍 User Mode</a>
+
+    <!-- Main Login Container -->
+    <div class="login-container">
+        <!-- Logo Section -->
+        <div class="logo-section">
+            <div class="logo">🔗</div>
+            <h1 class="app-title">Smart Link Finder</h1>
+            <p class="app-subtitle">Ultimate Admin Login</p>
+        </div>
+
+        <!-- Error Boundary -->
+        <div class="error-boundary" id="errorBoundary">
+            <strong>⚠️ JavaScript Error Detected</strong>
+            <p>Switching to safe mode...</p>
+        </div>
+
+        <!-- Safe Mode Notice -->
+        <div class="safe-mode" id="safeMode">
+            ℹ️ Running in safe mode - some features may be limited
+        </div>
+
+        <!-- Connection Status -->
+        <div id="connectionStatus" style="margin-bottom: 20px;">
+            <span class="status-indicator status-warning" id="statusIndicator"></span>
+            <span id="statusText">Checking connection...</span>
+        </div>
+
+        <!-- Success/Error Alerts -->
+        <div class="alert alert-success" id="successAlert">
+            <span class="alert-icon">✅</span>
+            <span id="successMessage">Login successful!</span>
+        </div>
+
+        <div class="alert alert-error" id="errorAlert">
+            <span class="alert-icon">❌</span>
+            <span id="errorMessage">Login failed. Please try again.</span>
+        </div>
+
+        <div class="alert alert-warning" id="warningAlert">
+            <span class="alert-icon">⚠️</span>
+            <span id="warningMessage">Please check your connection.</span>
+        </div>
+
+        <!-- Login Form -->
+        <form class="login-form" id="loginForm">
+            <div class="form-group">
+                <label class="form-label" for="username">Username</label>
+                <input 
+                    type="text" 
+                    id="username" 
+                    name="username" 
+                    class="form-input" 
+                    placeholder="Enter your username"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="password">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    class="form-input" 
+                    placeholder="Enter your password"
+                    autocomplete="current-password"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                <span class="button-spinner" id="buttonSpinner"></span>
+                <span class="button-text" id="buttonText">Sign In</span>
+            </button>
+        </form>
+
+        <!-- Debug Panel -->
+        <button class="debug-toggle" id="debugToggle">🔍 Show Debug Info</button>
+        <div class="debug-panel" id="debugPanel"></div>
+
+        <!-- Footer with Help -->
+        <div class="footer">
+            <div class="help-text">
+                <strong>Default Credentials:</strong>
+            </div>
+            <div class="credentials">
+                Super Admin: akash_super_admin / akash123<br>
+                Admin: admin / admin123
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-spinner"></div>
+            <p>Processing...</p>
+        </div>
+    </div>
+
+    <script>
+        // Ultimate Error Prevention System
+        (function() {
+            'use strict';
+            
+            // Global error handler
+            window.addEventListener('error', function(event) {
+                console.error('Global error caught:', event.error);
+                showError('A system error occurred. Please try again.');
+                event.preventDefault();
+            });
+
+            // Unhandled promise rejection handler
+            window.addEventListener('unhandledrejection', function(event) {
+                console.error('Unhandled promise rejection:', event.reason);
+                showError('A network error occurred. Please check your connection.');
+                event.preventDefault();
+            });
+
+            // Configuration
+            const CONFIG = {
+                API_BASE_URL: 'https://links-management-tool.onrender.com/api',
+                TIMEOUT: 30000,
+                RETRY_ATTEMPTS: 3,
+                RETRY_DELAY: 1000,
+                BACKEND_URLS: [
+                    'https://links-management-tool.onrender.com/api',
+                    'https://links-management-tool.onrender.com/api',
+                    'https://links-management-tool.onrender.com/api'
+                ]
+            };
+
+            // State management
+            let authToken = localStorage.getItem('adminToken');
+            let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
+            let safeMode = false;
+            let errorCount = 0;
+            let currentBackendIndex = 0;
+
+            // DOM Elements
+            const elements = {
+                loginForm: document.getElementById('loginForm'),
+                loginButton: document.getElementById('loginButton'),
+                buttonText: document.getElementById('buttonText'),
+                buttonSpinner: document.getElementById('buttonSpinner'),
+                username: document.getElementById('username'),
+                password: document.getElementById('password'),
+                successAlert: document.getElementById('successAlert'),
+                errorAlert: document.getElementById('errorAlert'),
+                warningAlert: document.getElementById('warningAlert'),
+                successMessage: document.getElementById('successMessage'),
+                errorMessage: document.getElementById('errorMessage'),
+                warningMessage: document.getElementById('warningMessage'),
+                loadingOverlay: document.getElementById('loadingOverlay'),
+                errorBoundary: document.getElementById('errorBoundary'),
+                safeMode: document.getElementById('safeMode'),
+                connectionStatus: document.getElementById('connectionStatus'),
+                statusIndicator: document.getElementById('statusIndicator'),
+                statusText: document.getElementById('statusText'),
+                debugPanel: document.getElementById('debugPanel'),
+                debugToggle: document.getElementById('debugToggle')
+            };
+
+            // Debug logging
+            function debugLog(message, type = 'info') {
+                const timestamp = new Date().toLocaleTimeString();
+                const className = type;
+                elements.debugPanel.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+                elements.debugPanel.scrollTop = elements.debugPanel.scrollHeight;
+                console.log(`[${timestamp}] ${message}`);
+            }
+
+            // Utility functions
+            function activateSafeMode() {
+                if (safeMode) return;
+                safeMode = true;
+                elements.safeMode.style.display = 'block';
+                debugLog('Safe mode activated', 'warning');
+            }
+
+            function showLoading(show) {
+                if (show) {
+                    elements.loginButton.disabled = true;
+                    elements.buttonText.textContent = 'Signing In...';
+                    elements.buttonSpinner.style.display = 'inline-block';
+                    elements.loadingOverlay.style.display = 'flex';
+                } else {
+                    elements.loginButton.disabled = false;
+                    elements.buttonText.textContent = 'Sign In';
+                    elements.buttonSpinner.style.display = 'none';
+                    elements.loadingOverlay.style.display = 'none';
+                }
+            }
+
+            function showSuccess(message) {
+                elements.successMessage.textContent = message;
+                elements.successAlert.style.display = 'flex';
+                elements.errorAlert.style.display = 'none';
+                elements.warningAlert.style.display = 'none';
+                hideAlertsAfterDelay();
+            }
+
+            function showError(message) {
+                elements.errorMessage.textContent = message;
+                elements.errorAlert.style.display = 'flex';
+                elements.successAlert.style.display = 'none';
+                elements.warningAlert.style.display = 'none';
+                hideAlertsAfterDelay();
+                errorCount++;
+                
+                if (errorCount > 3) {
+                    activateSafeMode();
+                }
+            }
+
+            function showWarning(message) {
+                elements.warningMessage.textContent = message;
+                elements.warningAlert.style.display = 'flex';
+                elements.successAlert.style.display = 'none';
+                elements.errorAlert.style.display = 'none';
+                hideAlertsAfterDelay();
+            }
+
+            function hideAlerts() {
+                elements.successAlert.style.display = 'none';
+                elements.errorAlert.style.display = 'none';
+                elements.warningAlert.style.display = 'none';
+            }
+
+            function hideAlertsAfterDelay() {
+                setTimeout(hideAlerts, 5000);
+            }
+
+            function updateConnectionStatus(status, text) {
+                elements.statusIndicator.className = `status-indicator status-${status}`;
+                elements.statusText.textContent = text;
+            }
+
+            function validateForm() {
+                const username = elements.username.value.trim();
+                const password = elements.password.value;
+
+                if (!username) {
+                    showError('Please enter your username');
+                    return false;
+                }
+
+                if (!password) {
+                    showError('Please enter your password');
+                    return false;
+                }
+
+                return { username, password };
+            }
+
+            // Backend switching
+            function switchBackend() {
+                currentBackendIndex = (currentBackendIndex + 1) % CONFIG.BACKEND_URLS.length;
+                const newBackend = CONFIG.BACKEND_URLS[currentBackendIndex];
+                debugLog(`Switching to backend ${currentBackendIndex + 1}: ${newBackend}`, 'warning');
+                return newBackend;
+            }
+
+            // Safe fetch wrapper with retry and backend switching
+            async function safeFetch(url, options = {}) {
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), CONFIG.TIMEOUT);
+
+                try {
+                    const response = await fetch(url, {
+                        ...options,
+                        signal: controller.signal
+                    });
+                    clearTimeout(timeoutId);
+                    return response;
+                } catch (error) {
+                    clearTimeout(timeoutId);
+                    if (error.name === 'AbortError') {
+                        throw new Error('Request timed out. Please try again.');
+                    }
+                    throw error;
+                }
+            }
+
+            // API functions with comprehensive error handling
+            async function apiCall(url, options = {}, attempt = 1) {
+                try {
+                    debugLog(`API call attempt ${attempt}: ${url}`, 'info');
+                    
+                    const response = await safeFetch(url, {
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        ...options
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || errorData.message || `Request failed (${response.status})`);
+                    }
+
+                    return await response.json();
+
+                } catch (error) {
+                    debugLog(`API call attempt ${attempt} failed: ${error.message}`, 'error');
+                    
+                    if (attempt < CONFIG.RETRY_ATTEMPTS) {
+                        debugLog(`Retrying in ${CONFIG.RETRY_DELAY}ms...`, 'warning');
+                        await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY));
+                        return apiCall(url, options, attempt + 1);
+                    }
+                    
+                    throw error;
+                }
+            }
+
+            // Backend connectivity testing
+            async function testBackendConnectivity() {
+                updateConnectionStatus('warning', 'Testing connection...');
+                
+                for (let i = 0; i < CONFIG.BACKEND_URLS.length; i++) {
+                    try {
+                        const backendUrl = CONFIG.BACKEND_URLS[i];
+                        debugLog(`Testing backend ${i + 1}: ${backendUrl}`, 'info');
+                        
+                        const response = await safeFetch(`${backendUrl}/health`, {
+                            method: 'GET',
+                            headers: { 'Accept': 'application/json' }
+                        });
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            debugLog(`Backend ${i + 1} is healthy: ${JSON.stringify(data)}`, 'success');
+                            updateConnectionStatus('online', 'Connected to backend');
+                            CONFIG.API_BASE_URL = backendUrl;
+                            currentBackendIndex = i;
+                            return true;
+                        }
+                    } catch (error) {
+                        debugLog(`Backend ${i + 1} failed: ${error.message}`, 'error');
+                    }
+                }
+                
+                updateConnectionStatus('offline', 'All backends unavailable');
+                showWarning('Cannot connect to any backend. Please check your internet connection.');
+                return false;
+            }
+
+            // Authentication functions
+            function checkAuthentication() {
+                if (!authToken || !currentUser) {
+                    debugLog('No authentication found', 'warning');
+                    return false;
+                }
+                return true;
+            }
+
+            function logout() {
+                localStorage.removeItem('adminToken');
+                localStorage.removeItem('currentUser');
+                authToken = null;
+                currentUser = null;
+                debugLog('Logged out successfully', 'info');
+            }
+
+            // Login function with comprehensive error handling
+            async function performLogin(username, password, attempt = 1) {
+                try {
+                    debugLog(`Login attempt ${attempt} for user: ${username}`, 'info');
+                    
+                    const response = await safeFetch(`${CONFIG.API_BASE_URL}/auth/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ username, password }),
+                        mode: 'cors',
+                        credentials: 'omit'
+                    });
+
+                    debugLog(`Response status: ${response.status}`, response.ok ? 'success' : 'error');
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(errorData.error || errorData.message || `Login failed (${response.status})`);
+                    }
+
+                    const data = await response.json();
+                    debugLog(`Login successful: ${JSON.stringify(data)}`, 'success');
+
+                    return data;
+
+                } catch (error) {
+                    debugLog(`Login attempt ${attempt} failed: ${error.message}`, 'error');
+                    
+                    if (attempt < CONFIG.RETRY_ATTEMPTS) {
+                        // Try switching backend for retry
+                        const newBackend = switchBackend();
+                        debugLog(`Retrying with different backend: ${newBackend}`, 'warning');
+                        await new Promise(resolve => setTimeout(resolve, CONFIG.RETRY_DELAY));
+                        return performLogin(username, password, attempt + 1);
+                    }
+                    
+                    throw error;
+                }
+            }
+
+            // Handle login success
+            function handleLoginSuccess(data) {
+                try {
+                    // Store authentication data
+                    localStorage.setItem('adminToken', data.token);
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        username: data.username,
+                        role: data.role
+                    }));
+
+                    authToken = data.token;
+                    currentUser = {
+                        username: data.username,
+                        role: data.role
+                    };
+
+                    debugLog('Authentication data stored successfully', 'success');
+                    showSuccess('Login successful! Redirecting to dashboard...');
+                    
+                    // Redirect after delay
+                    setTimeout(() => {
+                        window.location.href = 'admin-dashboard-ultimate.html';
+                    }, 1500);
+
+                } catch (error) {
+                    debugLog(`Error handling login success: ${error.message}`, 'error');
+                    showError('Login successful but redirect failed. Please navigate manually.');
+                }
+            }
+
+            // Handle login submission
+            async function handleLoginSubmit(event) {
+                event.preventDefault();
+                
+                try {
+                    const formData = validateForm();
+                    if (!formData) return;
+
+                    showLoading(true);
+                    hideAlerts();
+
+                    const data = await performLogin(formData.username, formData.password);
+                    handleLoginSuccess(data);
+
+                } catch (error) {
+                    debugLog(`Login error: ${error.message}`, 'error');
+                    let errorMessage = error.message || 'Login failed. Please try again.';
+                    
+                    // Provide user-friendly error messages
+                    if (errorMessage.includes('fetch') || errorMessage.includes('network')) {
+                        errorMessage = 'Network error. Please check your internet connection.';
+                    } else if (errorMessage.includes('timeout')) {
+                        errorMessage = 'Request timed out. Please try again.';
+                    } else if (errorMessage.includes('401') || errorMessage.includes('403')) {
+                        errorMessage = 'Invalid username or password.';
+                    } else if (errorMessage.includes('500')) {
+                        errorMessage = 'Server error. Please try again later.';
+                    }
+
+                    showError(errorMessage);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            // Initialize application
+            async function initializeApp() {
+                try {
+                    debugLog('Initializing ultimate login application...', 'info');
+                    
+                    // Check if already logged in
+                    if (checkAuthentication()) {
+                        debugLog('Already authenticated, redirecting...', 'info');
+                        showSuccess('Already logged in! Redirecting...');
+                        setTimeout(() => {
+                            window.location.href = 'admin-dashboard-ultimate.html';
+                        }, 1500);
+                        return;
+                    }
+
+                    // Set up form submission
+                    elements.loginForm.addEventListener('submit', handleLoginSubmit);
+
+                    // Set up debug toggle
+                    elements.debugToggle.addEventListener('click', () => {
+                        elements.debugPanel.classList.toggle('show');
+                        elements.debugToggle.textContent = elements.debugPanel.classList.contains('show') 
+                            ? '🔍 Hide Debug Info' 
+                            : '🔍 Show Debug Info';
+                    });
+
+                    // Focus on username field
+                    elements.username.focus();
+
+                    // Test backend connectivity
+                    await testBackendConnectivity();
+
+                    debugLog('Ultimate login application initialized successfully', 'success');
+
+                } catch (error) {
+                    debugLog(`Error initializing application: ${error.message}`, 'error');
+                    activateSafeMode();
+                    showError('Application initialization failed. Please refresh the page.');
+                }
+            }
+
+            // Start the application when DOM is ready
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeApp);
+            } else {
+                initializeApp();
+            }
+
+            // Expose safe mode for debugging
+            window.ultimateLoginMode = {
+                activate: activateSafeMode,
+                status: () => ({ 
+                    safeMode, 
+                    errorCount, 
+                    authenticated: !!authToken,
+                    backendIndex: currentBackendIndex,
+                    backendUrl: CONFIG.API_BASE_URL
+                }),
+                testBackend: testBackendConnectivity,
+                logout: logout
+            };
+
+        })();
+    </script>
+</body>
+</html>
