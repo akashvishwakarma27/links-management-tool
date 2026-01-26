@@ -1042,20 +1042,317 @@
             }
         }
 
-        @media (max-width: 768px) {
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 1024px) {
             .header-content {
                 flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+
+            .header-left {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+
+            .links-table {
+                font-size: 14px;
+            }
+
+            .links-table th,
+            .links-table td {
+                padding: 10px 8px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                font-size: 14px;
+            }
+
+            .header {
+                padding: 15px 20px;
+            }
+
+            .header-content {
                 gap: 20px;
+            }
+
+            .header-logo {
+                font-size: 28px;
+            }
+
+            .header-title h1 {
+                font-size: 20px;
+            }
+
+            .header-title p {
+                font-size: 13px;
+            }
+
+            .header-actions {
+                flex-direction: column;
+                gap: 10px;
+                width: 100%;
+            }
+
+            .header-actions span {
+                order: -1;
+            }
+
+            .header-actions .btn {
+                width: 100%;
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+
+            .main-content {
+                padding: 20px 15px;
             }
 
             .stats-grid {
                 grid-template-columns: 1fr;
+                gap: 12px;
+            }
+
+            .stat-card {
+                padding: 20px 15px;
+            }
+
+            .stat-icon {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+                margin-bottom: 5px;
+            }
+
+            .stat-label {
+                font-size: 0.9rem;
             }
 
             .section-header {
                 flex-direction: column;
                 gap: 15px;
                 align-items: flex-start;
+            }
+
+            .section-title {
+                font-size: 1.3rem;
+            }
+
+            .header-actions .btn {
+                min-width: auto;
+            }
+
+            /* Login Card Responsive */
+            .login-card {
+                margin: 20px;
+                padding: 30px 25px;
+                max-width: 100%;
+            }
+
+            .logo {
+                font-size: 3rem;
+                margin-bottom: 20px;
+            }
+
+            .login-card h1 {
+                font-size: 24px;
+                margin-bottom: 8px;
+            }
+
+            .login-card h2 {
+                font-size: 14px;
+                margin-bottom: 25px;
+            }
+
+            .form-group input {
+                padding: 12px 15px;
+                font-size: 16px; /* Prevents zoom on iOS */
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 16px;
+            }
+
+            .user-switch-container {
+                margin-top: 20px;
+            }
+
+            .btn-user-switch {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header {
+                padding: 12px 15px;
+            }
+
+            .header-logo {
+                font-size: 24px;
+            }
+
+            .header-title h1 {
+                font-size: 18px;
+            }
+
+            .main-content {
+                padding: 15px 10px;
+            }
+
+            .stat-card {
+                padding: 15px 12px;
+            }
+
+            .stat-icon {
+                font-size: 1.8rem;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            .section-title {
+                font-size: 1.2rem;
+            }
+
+            .login-card {
+                margin: 15px;
+                padding: 25px 20px;
+            }
+
+            .logo {
+                font-size: 2.5rem;
+            }
+
+            .login-card h1 {
+                font-size: 20px;
+            }
+
+            .form-group input {
+                padding: 10px 12px;
+            }
+
+            .btn {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+        }
+
+        /* Table Responsive */
+        @media (max-width: 768px) {
+            .table-container {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .links-table {
+                min-width: 600px;
+                font-size: 12px;
+            }
+
+            .links-table th,
+            .links-table td {
+                padding: 8px 6px;
+            }
+
+            .btn-action {
+                padding: 6px 10px;
+                font-size: 11px;
+                min-width: 60px;
+            }
+        }
+
+        /* Modal Responsive */
+        @media (max-width: 768px) {
+            .modal-content {
+                width: 95%;
+                margin: 10px;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+
+            .modal-header {
+                padding: 15px 20px;
+            }
+
+            .modal-header h3 {
+                font-size: 16px;
+            }
+
+            .form-group {
+                padding: 15px 20px;
+            }
+
+            .form-group label {
+                font-size: 14px;
+                margin-bottom: 6px;
+            }
+
+            .form-group input,
+            .form-group textarea,
+            .form-group select {
+                padding: 10px 12px;
+                font-size: 16px;
+            }
+
+            .form-actions {
+                padding: 15px 20px;
+                flex-direction: column;
+            }
+
+            .form-actions .btn {
+                width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .form-actions .btn:last-child {
+                margin-bottom: 0;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .header-logo:hover {
+                transform: none;
+            }
+            
+            .header-logo:active {
+                transform: scale(0.95);
+            }
+
+            .btn:hover {
+                transform: none;
+            }
+            
+            .btn:active {
+                transform: scale(0.98);
+            }
+
+            .btn-action:hover {
+                transform: none;
+            }
+            
+            .btn-action:active {
+                transform: scale(0.95);
             }
         }
     </style>

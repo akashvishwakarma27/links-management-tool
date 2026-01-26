@@ -373,37 +373,156 @@
         }
 
         /* Responsive Design */
+        @media (max-width: 1024px) {
+            .container {
+                max-width: 95%;
+            }
+            
+            .logo {
+                font-size: 3.5rem;
+            }
+        }
+
         @media (max-width: 768px) {
+            body {
+                padding: 15px;
+            }
+
             .container {
                 max-width: 100%;
-                padding: 0 15px;
+                padding: 0 10px;
             }
 
             .logo {
-                font-size: 3rem;
+                font-size: 2.8rem;
+                margin-bottom: 20px;
+            }
+
+            .search-container {
+                padding: 25px 20px;
+                border-radius: 12px;
+            }
+
+            .search-title {
+                font-size: 1.3rem;
+                margin-bottom: 20px;
             }
 
             .search-input {
-                width: 90%;
+                width: 100%;
+                padding: 12px 15px;
+                font-size: 16px; /* Prevents zoom on iOS */
             }
 
             .search-btn {
-                max-width: 100%;
+                padding: 12px 20px;
+                font-size: 16px;
             }
 
             .results-container {
-                padding: 30px 20px;
-                margin: 30px 15px 0;
+                padding: 20px 15px;
+                margin: 20px 0 0;
+                border-radius: 12px;
+            }
+
+            .link-item {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+
+            .link-info h3 {
+                font-size: 1.1rem;
+                margin-bottom: 8px;
+            }
+
+            .link-info p {
+                font-size: 0.9rem;
+                margin-bottom: 5px;
             }
 
             .link-actions {
                 flex-direction: column;
+                gap: 8px;
+                margin-top: 12px;
             }
 
             .btn-action {
                 min-width: 100%;
                 max-width: 100%;
-                height: 50px;
+                height: 45px;
+                font-size: 14px;
+                padding: 10px 15px;
+            }
+
+            .no-results {
+                padding: 30px 20px;
+            }
+
+            .no-results h3 {
+                font-size: 1.2rem;
+            }
+
+            .no-results p {
+                font-size: 0.95rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+
+            .logo {
+                font-size: 2.2rem;
+                margin-bottom: 15px;
+            }
+
+            .search-container {
+                padding: 20px 15px;
+            }
+
+            .search-title {
+                font-size: 1.1rem;
+            }
+
+            .search-input {
+                padding: 10px 12px;
+            }
+
+            .link-item {
+                padding: 12px;
+            }
+
+            .link-info h3 {
+                font-size: 1rem;
+            }
+
+            .link-info p {
+                font-size: 0.85rem;
+            }
+
+            .btn-action {
+                height: 40px;
+                font-size: 13px;
+            }
+        }
+
+        /* Touch-friendly improvements */
+        @media (hover: none) and (pointer: coarse) {
+            .logo:hover {
+                transform: none;
+            }
+            
+            .logo:active {
+                transform: scale(0.95);
+            }
+
+            .btn-action:hover {
+                transform: none;
+            }
+            
+            .btn-action:active {
+                transform: scale(0.98);
             }
         }
     </style>
