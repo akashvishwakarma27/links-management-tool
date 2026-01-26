@@ -897,7 +897,7 @@
     </style>
 
     <script>
-        const API_BASE_URL = 'https://srv-d5r6otc9c44c73e3k170.onrender.com/api';
+        const API_BASE_URL = 'http://localhost:8080/api';
         let authToken = localStorage.getItem('adminToken');
         let currentUser = JSON.parse(localStorage.getItem('currentUser') || 'null');
 
@@ -1079,6 +1079,11 @@
             const email = document.getElementById('newEmail').value;
             const password = document.getElementById('newPassword').value;
 
+            console.log('Registering admin:', { username, email, password: '***' });
+            console.log('Auth token:', authToken ? 'Present' : 'Missing');
+            console.log('Current user:', currentUser);
+            console.log('API URL:', API_BASE_URL);
+
             try {
                 const response = await fetch(`${API_BASE_URL}/auth/register-admin`, {
                     method: 'POST',
@@ -1094,6 +1099,8 @@
                 });
 
                 const data = await response.json();
+                console.log('Response status:', response.status);
+                console.log('Response data:', data);
 
                 if (response.status === 403) {
                     alert('Access denied. Only Super Admin users can register new admin accounts.');
