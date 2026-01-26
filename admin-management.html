@@ -393,7 +393,6 @@
             <table class="admin-table" id="adminTable" style="display: none;">
                 <thead>
                     <tr>
-                        <th>ID</th>
                         <th>Username</th>
                         <th>Email</th>
                         <th>Role</th>
@@ -556,6 +555,7 @@
             const loadingState = document.getElementById('loadingState');
             const emptyState = document.getElementById('emptyState');
             const table = document.getElementById('adminTable');
+            const tbody = document.getElementById('adminTableBody');
             
             loadingState.style.display = 'block';
             emptyState.style.display = 'none';
@@ -568,19 +568,56 @@
                     }
                 });
 
-                if (response.ok) {
-                    const data = await response.json();
-                    const admins = data.admins || [];
-                    displayAdmins(admins);
-                    updateStats(admins);
-                } else {
+                if (response.status === 403) {
+                    throw new Error('Access denied. Super Admin privileges required to view admin management.');
+                }
+
+                if (!response.ok) {
                     throw new Error('Failed to load admins');
                 }
+
+                const data = await response.json();
+                const admins = data.admins || [];
+
+                // Hide loading
+                loadingState.style.display = 'none';
+
+                if (admins.length === 0) {
+                    emptyState.style.display = 'block';
+                } else {
+                    table.style.display = 'table';
+                    tbody.innerHTML = admins.map(admin => {
+                        const createdAt = new Date(admin.createdAt).toLocaleDateString() + ' ' + new Date(admin.createdAt).toLocaleTimeString();
+                        const roleClass = admin.role === 'SUPER_ADMIN' ? 'super-admin' : 'admin';
+                        const canDelete = admin.role !== 'SUPER_ADMIN';
+                        
+                        return `
+                        <tr>
+                            <td>${admin.username}</td>
+                            <td>${admin.email}</td>
+                            <td><span class="role-badge ${roleClass}">${admin.role}</span></td>
+                            <td>${createdAt}</td>
+                            <td class="actions">
+                                ${canDelete ? `<button class="btn btn-danger btn-sm" onclick="deleteAdmin(${admin.id}, '${admin.username}')">🗑️ Delete</button>` : '<span class="text-muted">Protected</span>'}
+                            </td>
+                        </tr>
+                    `;
+                    }).join('');
+                }
+
+                // Update stats
+                updateStats(admins);
+
             } catch (error) {
                 console.error('Load admins error:', error);
-                alert('Failed to load administrators. Please try again.');
-            } finally {
                 loadingState.style.display = 'none';
+                
+                if (error.message.includes('Access denied')) {
+                    alert(error.message + '\n\nPlease login as a Super Admin to access this page.');
+                    window.location.href = 'admin-side-gsk.html';
+                } else {
+                    alert('Failed to load admins: ' + error.message);
+                }
             }
         }
 
@@ -689,6 +726,11 @@
                 });
 
                 const data = await response.json();
+
+                if (response.status === 403) {
+                    alert('Access denied. Only Super Admin users can register new admin accounts.');
+                    return;
+                }
 
                 if (response.ok) {
                     alert(`Admin "${username}" registered successfully!`);

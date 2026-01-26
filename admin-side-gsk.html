@@ -2089,7 +2089,7 @@
         }
 
         function closeUploadModal() {
-            document.getElementById('uploadModal').classList.remove('hide');
+            document.getElementById('uploadModal').classList.remove('show');
             resetUploadForm();
         }
 
@@ -2214,14 +2214,11 @@ PI-35001,https://example.com/doc6.pdf`;
                     loadLinks();
                     loadStats();
                     
-                    // Redirect to dashboard view (scroll to top)
-                    window.scrollTo({ top: 0, behavior: 'smooth' });
-                    
-                    // Focus on dashboard content
-                    const dashboardContainer = document.querySelector('.main-content');
-                    if (dashboardContainer) {
-                        dashboardContainer.focus();
-                    }
+                    // Redirect to dashboard after 3 seconds
+                    setTimeout(() => {
+                        window.location.href = '#dashboard';
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                    }, 3000);
                 } else {
                     showNotification('Upload Failed', data.message || 'Unknown error occurred', 'error');
                 }
