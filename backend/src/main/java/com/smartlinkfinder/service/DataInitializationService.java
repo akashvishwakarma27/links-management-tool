@@ -13,7 +13,13 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Legacy Data Initialization Service - DISABLED
+ * This service is replaced by PersistentDataInitializationService
+ * Keeping this file disabled to prevent conflicts
+ */
 @Service
+@Deprecated
 public class DataInitializationService {
     
     private static final Logger logger = LoggerFactory.getLogger(DataInitializationService.class);
@@ -26,39 +32,12 @@ public class DataInitializationService {
     
     @EventListener(ApplicationReadyEvent.class)
     public void initializeData() {
-        logger.info("Starting data initialization...");
-        
-        try {
-            createDefaultUsers();
-            logger.info("Data initialization completed successfully");
-        } catch (Exception e) {
-            logger.error("Error during data initialization", e);
-        }
+        logger.warn("DEPRECATED: DataInitializationService is disabled. Use PersistentDataInitializationService instead.");
+        logger.info("Skipping data initialization in deprecated service.");
     }
     
     private void createDefaultUsers() {
-        List<User> defaultUsers = Arrays.asList(
-            new User(
-                "admin", 
-                "admin@smartlinkfinder.com", 
-                passwordEncoder.encode("admin123"), 
-                User.Role.ADMIN
-            ),
-            new User(
-                "akash_super_admin", 
-                "akash.super@admin.com", 
-                passwordEncoder.encode("akash123"), 
-                User.Role.SUPER_ADMIN
-            )
-        );
-        
-        for (User user : defaultUsers) {
-            if (!userRepository.existsByUsername(user.getUsername())) {
-                userRepository.save(user);
-                logger.info("Created default user: {} with role: {}", user.getUsername(), user.getRole());
-            } else {
-                logger.debug("User {} already exists, skipping creation", user.getUsername());
-            }
-        }
+        // This method is deprecated - use PersistentDataInitializationService
+        logger.warn("DEPRECATED: createDefaultUsers is disabled. Use PersistentDataInitializationService instead.");
     }
 }
