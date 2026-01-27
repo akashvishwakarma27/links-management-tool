@@ -731,6 +731,9 @@
                     const urlPath = new URL(fullUrl).pathname;
                     const pathSegments = urlPath.split('/').filter(segment => segment.length > 0);
                     
+                    console.log('Brand extraction - URL:', fullUrl);
+                    console.log('Brand extraction - Path segments:', pathSegments);
+                    
                     // Look for brand in all path segments (not just first match)
                     for (const segment of pathSegments) {
                         const lowerSegment = segment.toLowerCase();
@@ -738,6 +741,7 @@
                         // Check if segment matches any brand pattern
                         for (const pattern of brandPatterns) {
                             if (lowerSegment.match(pattern.pattern)) {
+                                console.log('Brand found in segment:', segment, '→', pattern.name);
                                 return pattern.name;
                             }
                         }
@@ -748,9 +752,12 @@
                     if (fileName) {
                         const lowerFileName = fileName.toLowerCase();
                         
+                        console.log('Brand extraction - Checking filename:', fileName);
+                        
                         // Check filename for brand patterns
                         for (const pattern of brandPatterns) {
                             if (lowerFileName.match(pattern.pattern)) {
+                                console.log('Brand found in filename:', fileName, '→', pattern.name);
                                 return pattern.name;
                             }
                         }
@@ -764,6 +771,7 @@
                 // Fallback: check entire URL string for brand patterns
                 for (const pattern of brandPatterns) {
                     if (fullUrl.match(pattern.pattern)) {
+                        console.log('Brand found in full URL:', pattern.name);
                         return pattern.name;
                     }
                 }
@@ -771,6 +779,8 @@
 
             // Enhanced reference code brand extraction
             if (referenceCode) {
+                console.log('Brand extraction - Checking reference code:', referenceCode);
+                
                 const refBrand = referenceCode.split('-')[0];
                 if (refBrand) {
                     const refBrandUpper = refBrand.toUpperCase();
@@ -820,6 +830,7 @@
                     };
                     
                     if (brandCodeMap[refBrandUpper]) {
+                        console.log('Brand found in reference code:', refBrandUpper, '→', brandCodeMap[refBrandUpper]);
                         return brandCodeMap[refBrandUpper];
                     }
                     
@@ -832,6 +843,7 @@
                 }
             }
 
+            console.log('Brand extraction - No brand found, returning Unknown');
             return 'Unknown';
         }
 
