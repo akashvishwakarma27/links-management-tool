@@ -628,9 +628,17 @@
             const displayLinks = links.slice(0, 20);
             
             displayLinks.forEach(link => {
+                // Debug: Log the actual link data from backend
+                console.log('Processing link:', link);
+                console.log('Link fullUrl:', link.fullUrl);
+                console.log('Link referenceCode:', link.referenceCode);
+                
                 // Extract brand and country from URL and reference code
                 const brand = extractBrandFromUrl(link.fullUrl, link.referenceCode);
                 const country = extractCountryFromUrl(link.fullUrl, link.referenceCode);
+                
+                console.log('Extracted brand:', brand);
+                console.log('Extracted country:', country);
                 
                 const linkCard = document.createElement('div');
                 linkCard.className = 'link-card';
