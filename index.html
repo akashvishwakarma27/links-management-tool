@@ -1005,6 +1005,46 @@
                 }
             }, 5000);
         }
+
+        // Test function for brand extraction - call from console
+        function testBrandExtraction() {
+            const testUrls = [
+                'https://assets.company.com/pharma/pakistan/ventolin/pi_33060_v1.pdf',
+                'https://assets.company.com/pharma/egypt/singrix/pi_31001_v1.pdf',
+                'https://assets.company.com/pharma/gulf/cafspan/pi_32001_v1.pdf'
+            ];
+            
+            const testRefCodes = [
+                'PI-33060-PK',
+                'PI-31001-EG',
+                'CAF-32001-GULF'
+            ];
+            
+            console.log('=== BRAND EXTRACTION TEST ===');
+            
+            testUrls.forEach((url, index) => {
+                const refCode = testRefCodes[index];
+                console.log(`\nTest ${index + 1}:`);
+                console.log('URL:', url);
+                console.log('Ref Code:', refCode);
+                
+                const brand = extractBrandFromUrl(url, refCode);
+                const country = extractCountryFromUrl(url, refCode);
+                
+                console.log('Brand:', brand);
+                console.log('Country:', country);
+            });
+            
+            console.log('\n=== END TEST ===');
+        }
+
+        // Auto-focus search input on load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('searchInput').focus();
+            
+            // Add test button to console
+            console.log('To test brand extraction, type: testBrandExtraction()');
+        });
     </script>
 </body>
 </html>
