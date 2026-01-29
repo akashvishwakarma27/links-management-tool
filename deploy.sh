@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# GSK Smart Link Finder - Railway Deployment Script
+# LMT Smart Link Finder - Railway Deployment Script
 
-echo "🚀 Starting Railway Deployment for GSK Smart Link Finder..."
+echo "🚀 Starting Railway Deployment for LMT Smart Link Finder..."
 
 # Step 1: Build the project
 echo "📦 Building Spring Boot application..."

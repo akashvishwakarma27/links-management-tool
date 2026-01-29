@@ -1,0 +1,365 @@
+name: LMT Automated Tasks
+
+on:
+  schedule:
+    # Daily backup at 2:00 AM UTC
+    - cron: '0 2 * * *'
+    # Health check every 6 hours
+    - cron: '0 */6 * * *'
+    # Weekly cleanup on Sundays at 3:00 AM UTC
+    - cron: '0 3 * * 0'
+    # Monthly deployment check on 1st at 4:00 AM UTC
+    - cron: '0 4 1 * *'
+  workflow_dispatch:
+    inputs:
+      task_type:
+        description: 'Type of task to run'
+        required: true
+        default: 'backup'
+        type: choice
+        options:
+        - backup
+        - health-check
+        - cleanup
+        - deployment-check
+
+env:
+  NODE_VERSION: '18'
+  BACKUP_RETENTION_DAYS: 30
+
+jobs:
+  # Daily Backup Job
+  backup:
+    name: Automated Backup
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 2 * * *' || github.event.inputs.task_type == 'backup'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        
+    - name: Create backup directory
+      run: |
+        mkdir -p backups/$(date +%Y-%m-%d)
+        echo "BACKUP_DIR=backups/$(date +%Y-%m-%d)" >> $GITHUB_ENV
+        
+    - name: Backup frontend files
+      run: |
+        echo "📦 Backing up frontend files..."
+        cp -r *.html ${{ env.BACKUP_DIR }}/
+        cp -r *.css ${{ env.BACKUP_DIR }}/ 2>/dev/null || true
+        cp -r *.js ${{ env.BACKUP_DIR }}/ 2>/dev/null || true
+        
+    - name: Backup configuration files
+      run: |
+        echo "⚙️ Backing up configuration..."
+        cp -r *.yml ${{ env.BACKUP_DIR }}/
+        cp -r *.yaml ${{ env.BACKUP_DIR }}/
+        cp -r *.toml ${{ env.BACKUP_DIR }}/
+        cp -r *.sh ${{ env.BACKUP_DIR }}/
+        cp -r *.md ${{ env.BACKUP_DIR }}/
+        
+    - name: Create backup manifest
+      run: |
+        echo "📋 Creating backup manifest..."
+        cat > ${{ env.BACKUP_DIR }}/backup-manifest.json << EOF
+        {
+          "backup_date": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "git_commit": "${{ github.sha }}",
+          "git_branch": "${{ github.ref_name }}",
+          "backup_type": "automated",
+          "files": $(find ${{ env.BACKUP_DIR }} -type f ! -name "backup-manifest.json" | sed 's/.*\///' | jq -R . | jq -s .)
+        }
+        EOF
+        
+    - name: Compress backup
+      run: |
+        echo "🗜️ Compressing backup..."
+        tar -czf backup-$(date +%Y-%m-%d).tar.gz -C backups $(date +%Y-%m-%d)
+        
+    - name: Upload backup artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: backup-${{ github.run_number }}
+        path: backup-*.tar.gz
+        retention-days: ${{ env.BACKUP_RETENTION_DAYS }}
+        
+    - name: Create backup summary
+      run: |
+        echo "## 📦 Backup Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Date**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Files backed up**: $(find ${{ env.BACKUP_DIR }} -type f ! -name "backup-manifest.json" | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backup size**: $(du -h backup-*.tar.gz | cut -f1)" >> $GITHUB_STEP_SUMMARY
+
+  # Health Check Job
+  health-check:
+    name: System Health Check
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 */6 * * *' || github.event.inputs.task_type == 'health-check'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        
+    - name: Check backend health
+      run: |
+        echo "🏥 Checking backend health..."
+        BACKEND_URL="https://links-management-tool.onrender.com/api"
+        
+        # Test authentication endpoint
+        echo "Testing /auth/login endpoint..."
+        AUTH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X OPTIONS "$BACKEND_URL/auth/login" --max-time 30)
+        echo "Auth endpoint status: $AUTH_STATUS"
+        
+        # Test search endpoint
+        echo "Testing /links/search endpoint..."
+        SEARCH_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/links/search?q=test" --max-time 30)
+        echo "Search endpoint status: $SEARCH_STATUS"
+        
+        # Create health report
+        cat > health-report.json << EOF
+        {
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "backend_url": "$BACKEND_URL",
+          "auth_endpoint_status": $AUTH_STATUS,
+          "search_endpoint_status": $SEARCH_STATUS,
+          "overall_status": "$([ $AUTH_STATUS -ge 200 ] && [ $AUTH_STATUS -lt 500 ] && [ $SEARCH_STATUS -ge 200 ] && [ $SEARCH_STATUS -lt 500 ] && echo "HEALTHY" || echo "UNHEALTHY")"
+        }
+        EOF
+        
+    - name: Check frontend files
+      run: |
+        echo "🎨 Checking frontend files..."
+        
+        # Check if main HTML files exist and are valid
+        FILES=("index.html" "admin-side-gsk.html" "admin-management.html")
+        
+        for file in "${FILES[@]}"; do
+          if [[ -f "$file" ]]; then
+            echo "✅ $file exists"
+            
+            # Basic HTML validation
+            if grep -q "<!DOCTYPE html>" "$file"; then
+              echo "✅ $file has valid DOCTYPE"
+            else
+              echo "❌ $file missing DOCTYPE"
+            fi
+            
+            # Check for LMT branding
+            if grep -q "LMT" "$file"; then
+              echo "✅ $file has LMT branding"
+            else
+              echo "⚠️ $file missing LMT branding"
+            fi
+          else
+            echo "❌ $file not found"
+          fi
+        done
+        
+    - name: Upload health report
+      uses: actions/upload-artifact@v4
+      with:
+        name: health-report-${{ github.run_number }}
+        path: health-report.json
+        retention-days: 7
+        
+    - name: Create health summary
+      run: |
+        echo "## 🏥 Health Check Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Backend URL**: https://links-management-tool.onrender.com/api" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f health-report.json ]]; then
+          AUTH_STATUS=$(jq -r '.auth_endpoint_status' health-report.json)
+          SEARCH_STATUS=$(jq -r '.search_endpoint_status' health-report.json)
+          OVERALL_STATUS=$(jq -r '.overall_status' health-report.json)
+          
+          echo "- **Auth Endpoint**: $AUTH_STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Search Endpoint**: $SEARCH_STATUS" >> $GITHUB_STEP_SUMMARY
+          echo "- **Overall Status**: $OVERALL_STATUS" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ "$OVERALL_STATUS" == "HEALTHY" ]]; then
+            echo "✅ All systems operational" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ Some issues detected" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+
+  # Weekly Cleanup Job
+  cleanup:
+    name: Weekly Cleanup
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 3 * * 0' || github.event.inputs.task_type == 'cleanup'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Clean up old artifacts
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            run_id: context.runId,
+          });
+          
+          // Delete artifacts older than 7 days
+          const cutoffDate = new Date();
+          cutoffDate.setDate(cutoffDate.getDate() - 7);
+          
+          for (const artifact of artifacts.data.artifacts) {
+            const createdDate = new Date(artifact.created_at);
+            if (createdDate < cutoffDate) {
+              console.log(`Deleting old artifact: ${artifact.name}`);
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+              });
+            }
+          }
+          
+    - name: Repository cleanup
+      run: |
+        echo "🧹 Performing repository cleanup..."
+        
+        # Remove temporary files
+        find . -name "*.tmp" -type f -delete 2>/dev/null || true
+        find . -name "*.log" -type f -delete 2>/dev/null || true
+        find . -name ".DS_Store" -type f -delete 2>/dev/null || true
+        
+        # Clean up backup directories older than 30 days
+        if [[ -d "backups" ]]; then
+          find backups -type d -mtime +30 -exec rm -rf {} + 2>/dev/null || true
+        fi
+        
+        echo "✅ Cleanup completed"
+        
+    - name: Create cleanup summary
+      run: |
+        echo "## 🧹 Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Temporary files removed**: $(find . -name "*.tmp" -type f 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Log files removed**: $(find . -name "*.log" -type f 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Repository size**: $(du -sh . | cut -f1)" >> $GITHUB_STEP_SUMMARY
+
+  # Monthly Deployment Check
+  deployment-check:
+    name: Deployment Check
+    runs-on: ubuntu-latest
+    if: github.event.schedule == '0 4 1 * *' || github.event.inputs.task_type == 'deployment-check'
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check deployment configurations
+      run: |
+        echo "🚀 Checking deployment configurations..."
+        
+        # Check Render configuration
+        if [[ -f "render.yaml" ]]; then
+          echo "✅ render.yaml found"
+          if grep -q "lmt-link-finder" render.yaml; then
+            echo "✅ Render service name updated to LMT"
+          else
+            echo "⚠️ Render service name may need updating"
+          fi
+        else
+          echo "❌ render.yaml not found"
+        fi
+        
+        # Check Fly.io configuration
+        if [[ -f "fly.toml" ]]; then
+          echo "✅ fly.toml found"
+          if grep -q "lmt-link-finder" fly.toml; then
+            echo "✅ Fly.io app name updated to LMT"
+          else
+            echo "⚠️ Fly.io app name may need updating"
+          fi
+        else
+          echo "❌ fly.toml not found"
+        fi
+        
+        # Check deployment script
+        if [[ -f "deploy.sh" ]]; then
+          echo "✅ deploy.sh found"
+          if grep -q "LMT" deploy.sh; then
+            echo "✅ Deployment script updated to LMT"
+          else
+            echo "⚠️ Deployment script may need updating"
+          fi
+        else
+          echo "❌ deploy.sh not found"
+        fi
+        
+    - name: Check API endpoints
+      run: |
+        echo "🔍 Checking API endpoints..."
+        
+        # Test live backend
+        BACKEND_URL="https://links-management-tool.onrender.com/api"
+        
+        echo "Testing backend connectivity..."
+        if curl -s --max-time 30 "$BACKEND_URL/links/search?q=test" > /dev/null; then
+          echo "✅ Backend is accessible"
+        else
+          echo "❌ Backend is not accessible"
+        fi
+        
+    - name: Create deployment report
+      run: |
+        cat > deployment-report.json << EOF
+        {
+          "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+          "repository": "${{ github.repository }}",
+          "default_branch": "${{ github.ref_name }}",
+          "last_commit": "${{ github.sha }}",
+          "deployment_configs": {
+            "render_yaml": $([ -f "render.yaml" ] && echo "true" || echo "false"),
+            "fly_toml": $([ -f "fly.toml" ] && echo "true" || echo "false"),
+            "deploy_sh": $([ -f "deploy.sh" ] && echo "true" || echo "false")
+          },
+          "branding_updated": $(grep -r "LMT" *.html *.md *.sh *.yaml *.yml *.toml 2>/dev/null | wc -l)
+        }
+        EOF
+        
+    - name: Upload deployment report
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-report-${{ github.run_number }}
+        path: deployment-report.json
+        retention-days: 30
+        
+    - name: Create deployment summary
+      run: |
+        echo "## 🚀 Deployment Check Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Repository**: ${{ github.repository }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Default Branch**: ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Last Commit**: ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+        
+        if [[ -f deployment-report.json ]]; then
+          LMT_FILES=$(jq -r '.branding_updated' deployment-report.json)
+          echo "- **LMT Branding Files**: $LMT_FILES" >> $GITHUB_STEP_SUMMARY
+          
+          if [[ $LMT_FILES -gt 0 ]]; then
+            echo "✅ LMT branding is active" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️ LMT branding may need updating" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi

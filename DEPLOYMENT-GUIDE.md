@@ -1,4 +1,4 @@
-# Deployment Guide for GSK Smart Link Finder
+# Deployment Guide for LMT Smart Link Finder
 
 ## 🌐 Live Deployment
 

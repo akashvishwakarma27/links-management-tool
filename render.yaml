@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: gsk-link-finder
+    name: lmt-link-finder
     env: docker
     repo: https://github.com/akashvishwakarma27/links-management-tool.git
     rootDir: backend

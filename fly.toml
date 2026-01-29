@@ -1,6 +1,6 @@
 # fly.toml app configuration file generated for links-management-tool on 2025-01-25T20:23:00+05:30
 
-app = "gsk-link-finder"
+app = "lmt-link-finder"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = []

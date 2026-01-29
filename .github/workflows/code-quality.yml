@@ -1,0 +1,367 @@
+name: Code Quality & Testing
+
+on:
+  schedule:
+    # Run tests every weekday at 8:00 AM UTC
+    - cron: '0 8 * * 1-5'
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # HTML Validation
+  html-validation:
+    name: HTML Validation
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install HTML validator
+      run: npm install -g html-validator
+      
+    - name: Validate HTML files
+      run: |
+        echo "🔍 Validating HTML files..."
+        
+        FILES=("index.html" "admin-side-gsk.html" "admin-management.html")
+        VALIDATION_ERRORS=0
+        
+        for file in "${FILES[@]}"; do
+          if [[ -f "$file" ]]; then
+            echo "Validating $file..."
+            
+            # Basic HTML structure checks
+            if ! grep -q "<!DOCTYPE html>" "$file"; then
+              echo "❌ $file: Missing DOCTYPE declaration"
+              ((VALIDATION_ERRORS++))
+            fi
+            
+            if ! grep -q "<html" "$file"; then
+              echo "❌ $file: Missing html tag"
+              ((VALIDATION_ERRORS++))
+            fi
+            
+            if ! grep -q "<head>" "$file"; then
+              echo "❌ $file: Missing head tag"
+              ((VALIDATION_ERRORS++))
+            fi
+            
+            if ! grep -q "<body>" "$file"; then
+              echo "❌ $file: Missing body tag"
+              ((VALIDATION_ERRORS++))
+            fi
+            
+            # Check for required meta tags
+            if ! grep -q 'charset="UTF-8"' "$file"; then
+              echo "❌ $file: Missing UTF-8 charset"
+              ((VALIDATION_ERRORS++))
+            fi
+            
+            if ! grep -q 'viewport' "$file"; then
+              echo "⚠️ $file: Missing viewport meta tag"
+            fi
+            
+            # Check for LMT branding
+            if grep -q "LMT" "$file"; then
+              echo "✅ $file: Contains LMT branding"
+            else
+              echo "⚠️ $file: Missing LMT branding"
+            fi
+            
+            # Check for broken links (basic)
+            echo "Checking for obvious broken links in $file..."
+            BROKEN_LINKS=$(grep -o 'href="[^"]*"' "$file" | grep -E "(localhost|127\.0\.0\.1|file://)" | wc -l)
+            if [[ $BROKEN_LINKS -gt 0 ]]; then
+              echo "⚠️ $file: Found $BROKEN_LINKS potentially broken links"
+            fi
+            
+          else
+            echo "❌ File not found: $file"
+            ((VALIDATION_ERRORS++))
+          fi
+        done
+        
+        echo "Total validation errors: $VALIDATION_ERRORS"
+        exit $VALIDATION_ERRORS
+        
+    - name: Create validation report
+      run: |
+        echo "## 🔍 HTML Validation Report" >> $GITHUB_STEP_SUMMARY
+        echo "- **Files checked**: index.html, admin-side-gsk.html, admin-management.html" >> $GITHUB_STEP_SUMMARY
+        echo "- **Validation status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+  # JavaScript Linting
+  js-linting:
+    name: JavaScript Linting
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install ESLint
+      run: npm install -g eslint
+      
+    - name: Create ESLint configuration
+      run: |
+        cat > .eslintrc.json << EOF
+        {
+          "env": {
+            "browser": true,
+            "es2021": true
+          },
+          "extends": "eslint:recommended",
+          "parserOptions": {
+            "ecmaVersion": 12,
+            "sourceType": "script"
+          },
+          "rules": {
+            "no-unused-vars": "warn",
+            "no-console": "warn",
+            "semi": ["error", "always"],
+            "quotes": ["error", "single"],
+            "no-trailing-spaces": "error",
+            "no-multiple-empty-lines": ["error", { "max": 2 }]
+          }
+        }
+        EOF
+        
+    - name: Lint JavaScript files
+      run: |
+        echo "🔍 Linting JavaScript files..."
+        
+        # Extract JavaScript from HTML files
+        mkdir -p temp_js
+        
+        for html_file in *.html; do
+          if [[ -f "$html_file" ]]; then
+            echo "Extracting JS from $html_file..."
+            
+            # Extract script content
+            sed -n '/<script>/,/<\/script>/p' "$html_file" | \
+            sed '1d;$d' > "temp_js/${html_file%.html}.js"
+          fi
+        done
+        
+        # Run ESLint
+        LINT_ERRORS=0
+        
+        for js_file in temp_js/*.js; do
+          if [[ -f "$js_file" ]]; then
+            echo "Linting $js_file..."
+            
+            if ! eslint "$js_file" --format=compact; then
+              ((LINT_ERRORS++))
+            fi
+          fi
+        done
+        
+        echo "Total lint errors: $LINT_ERRORS"
+        
+        # Cleanup
+        rm -rf temp_js
+        
+        exit $LINT_ERRORS
+        
+    - name: Create linting report
+      run: |
+        echo "## 🔍 JavaScript Linting Report" >> $GITHUB_STEP_SUMMARY
+        echo "- **Files linted**: $(ls *.html 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Linting status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+  # Security Scan
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Run security scan
+      run: |
+        echo "🔒 Running security scan..."
+        
+        SECURITY_ISSUES=0
+        
+        # Check for sensitive information
+        echo "Checking for sensitive information..."
+        
+        # Look for potential API keys or passwords
+        if grep -r -i "password\|secret\|key\|token" . --include="*.html" --include="*.js" --include="*.json" | grep -v "password.*placeholder\|localStorage\|sessionStorage"; then
+          echo "⚠️ Potential sensitive information found"
+          ((SECURITY_ISSUES++))
+        fi
+        
+        # Check for unsafe inline scripts
+        echo "Checking for unsafe inline scripts..."
+        for html_file in *.html; do
+          if [[ -f "$html_file" ]]; then
+            UNSAFE_SCRIPTS=$(grep -c "javascript:" "$html_file" 2>/dev/null || echo 0)
+            if [[ $UNSAFE_SCRIPTS -gt 0 ]]; then
+              echo "⚠️ $html_file: Found $UNSAFE_SCRIPTS unsafe javascript: links"
+              ((SECURITY_ISSUES++))
+            fi
+          fi
+        done
+        
+        # Check for external CDN links
+        echo "Checking external dependencies..."
+        EXTERNAL_LINKS=$(grep -h "href\|src" *.html 2>/dev/null | grep -E "(http|https)://" | grep -v "links-management-tool.onrender.com" | wc -l)
+        echo "External links found: $EXTERNAL_LINKS"
+        
+        if [[ $EXTERNAL_LINKS -gt 5 ]]; then
+          echo "⚠️ High number of external links detected"
+          ((SECURITY_ISSUES++))
+        fi
+        
+        echo "Security issues found: $SECURITY_ISSUES"
+        
+        # Only fail on critical issues
+        if [[ $SECURITY_ISSUES -gt 5 ]]; then
+          exit 1
+        fi
+        
+    - name: Create security report
+      run: |
+        echo "## 🔒 Security Scan Report" >> $GITHUB_STEP_SUMMARY
+        echo "- **Scan status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **External links**: $(grep -h "href\|src" *.html 2>/dev/null | grep -E "(http|https)://" | grep -v "links-management-tool.onrender.com" | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+  # Performance Check
+  performance-check:
+    name: Performance Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check file sizes
+      run: |
+        echo "📊 Checking file sizes..."
+        
+        # Check HTML file sizes
+        for html_file in *.html; do
+          if [[ -f "$html_file" ]]; then
+            SIZE=$(du -h "$html_file" | cut -f1)
+            SIZE_BYTES=$(stat -c%s "$html_file")
+            
+            echo "$html_file: $SIZE ($SIZE_BYTES bytes)"
+            
+            # Warn if file is too large (>500KB)
+            if [[ $SIZE_BYTES -gt 512000 ]]; then
+              echo "⚠️ $html_file is large (>500KB)"
+            fi
+          fi
+        done
+        
+        # Check total repository size
+        REPO_SIZE=$(du -sh . | cut -f1)
+        echo "Total repository size: $REPO_SIZE"
+        
+    - name: Check image optimization
+      run: |
+        echo "🖼️ Checking for image optimization..."
+        
+        # Look for unoptimized images
+        if find . -name "*.png" -o -name "*.jpg" -o -name "*.jpeg" -o -name "*.gif" | head -5; then
+          echo "⚠️ Found image files - consider optimization"
+        else
+          echo "✅ No image files found"
+        fi
+        
+    - name: Create performance report
+      run: |
+        echo "## 📊 Performance Report" >> $GITHUB_STEP_SUMMARY
+        echo "- **Repository size**: $(du -sh . | cut -f1)" >> $GITHUB_STEP_SUMMARY
+        echo "- **HTML files**: $(ls *.html 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Largest HTML file**: $(ls -la *.html 2>/dev/null | sort -k5 -nr | head -1 | awk '{print $5 " " $9}')" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+
+  # Accessibility Check
+  accessibility-check:
+    name: Accessibility Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      
+    - name: Check accessibility features
+      run: |
+        echo "♿ Checking accessibility features..."
+        
+        ACCESSIBILITY_ISSUES=0
+        
+        for html_file in *.html; do
+          if [[ -f "$html_file" ]]; then
+            echo "Checking $html_file..."
+            
+            # Check for alt text on images
+            if grep -q "<img" "$html_file"; then
+              IMAGES_WITHOUT_ALT=$(grep "<img" "$html_file" | grep -v "alt=" | wc -l)
+              if [[ $IMAGES_WITHOUT_ALT -gt 0 ]]; then
+                echo "⚠️ $html_file: $IMAGES_WITHOUT_ALT images without alt text"
+                ((ACCESSIBILITY_ISSUES++))
+              fi
+            fi
+            
+            # Check for form labels
+            if grep -q "<input" "$html_file"; then
+              INPUTS_WITHOUT_LABELS=$(grep "<input" "$html_file" | grep -v -E "(id=.*label|aria-label)" | wc -l)
+              if [[ $INPUTS_WITHOUT_LABELS -gt 0 ]]; then
+                echo "⚠️ $html_file: $INPUTS_WITHOUT_LABELS inputs without proper labels"
+                ((ACCESSIBILITY_ISSUES++))
+              fi
+            fi
+            
+            # Check for heading structure
+            if ! grep -q "<h1>" "$html_file"; then
+              echo "⚠️ $html_file: Missing H1 tag"
+              ((ACCESSIBILITY_ISSUES++))
+            fi
+            
+            # Check for title tag
+            if ! grep -q "<title>" "$html_file"; then
+              echo "❌ $html_file: Missing title tag"
+              ((ACCESSIBILITY_ISSUES++))
+            fi
+            
+            # Check for meta description
+            if ! grep -q 'name="description"' "$html_file"; then
+              echo "⚠️ $html_file: Missing meta description"
+              ((ACCESSIBILITY_ISSUES++))
+            fi
+          fi
+        done
+        
+        echo "Accessibility issues found: $ACCESSIBILITY_ISSUES"
+        
+        # Only fail on critical issues
+        if [[ $ACCESSIBILITY_ISSUES -gt 10 ]]; then
+          exit 1
+        fi
+        
+    - name: Create accessibility report
+      run: |
+        echo "## ♿ Accessibility Report" >> $GITHUB_STEP_SUMMARY
+        echo "- **Files checked**: $(ls *.html 2>/dev/null | wc -l)" >> $GITHUB_STEP_SUMMARY
+        echo "- **Check status**: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+        echo "- **Timestamp**: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
