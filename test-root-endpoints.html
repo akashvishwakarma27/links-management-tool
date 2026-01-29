@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Root Endpoints</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Test Root Endpoints</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="testAll()">Test All Endpoints</button>
+    <button onclick="testRoot()">Test Root (/)</button>
+    <button onclick="testAPI()">Test API (/api)</button>
+    <button onclick="testHealth()">Test Health (/health)</button>
+    
+    <script>
+        const BASE_URL = 'https://links-management-tool.onrender.com';
+        
+        async function testEndpoint(url, description) {
+            const results = document.getElementById('results');
+            
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                
+                results.innerHTML += `
+                    <div class="result ${response.ok ? 'success' : 'error'}">
+                        <h3>${response.ok ? '✅' : '❌'} ${description}</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Response:</strong></p>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    </div>
+                `;
+                
+                return response.ok;
+                
+            } catch (error) {
+                results.innerHTML += `
+                    <div class="result error">
+                        <h3>❌ ${description}</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+                return false;
+            }
+        }
+        
+        async function testRoot() {
+            await testEndpoint(BASE_URL + '/', 'Root Endpoint (/)');
+        }
+        
+        async function testAPI() {
+            await testEndpoint(BASE_URL + '/api', 'API Info Endpoint (/api)');
+        }
+        
+        async function testHealth() {
+            await testEndpoint(BASE_URL + '/health', 'Health Check (/health)');
+        }
+        
+        async function testAll() {
+            document.getElementById('results').innerHTML = '<h2>🔄 Testing all endpoints...</h2>';
+            
+            const tests = [
+                { url: '/', desc: 'Root Endpoint (/)' },
+                { url: '/api', desc: 'API Info Endpoint (/api)' },
+                { url: '/health', desc: 'Health Check (/health)' },
+                { url: '/health/detailed', desc: 'Detailed Health (/health/detailed)' }
+            ];
+            
+            let passed = 0;
+            let total = tests.length;
+            
+            for (const test of tests) {
+                const success = await testEndpoint(BASE_URL + test.url, test.desc);
+                if (success) passed++;
+            }
+            
+            document.getElementById('results').innerHTML += `
+                <div class="result ${passed === total ? 'success' : 'info'}">
+                    <h3>📊 Test Summary</h3>
+                    <p><strong>Passed:</strong> ${passed}/${total} tests</p>
+                    <p><strong>Success Rate:</strong> ${Math.round((passed/total) * 100)}%</p>
+                    ${passed === total ? '<p>✅ All endpoints are working correctly!</p>' : '<p>⚠️ Some endpoints need attention</p>'}
+                </div>
+            `;
+        }
+        
+        // Auto-run on page load
+        window.onload = () => {
+            testAll();
+        };
+    </script>
+</body>
+</html>

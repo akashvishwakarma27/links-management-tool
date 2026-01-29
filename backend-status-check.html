@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Backend Status Check</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Backend Status Check</h1>
+    
+    <div id="results"></div>
+    
+    <button onclick="checkAllEndpoints()">Check All Endpoints</button>
+    <button onclick="checkRoot()">Check Root</button>
+    <button onclick="checkAPI()">Check API</button>
+    <button onclick="checkLogin()">Check Login</button>
+    <button onclick="checkSearch()">Check Search</button>
+    
+    <script>
+        const BASE_URL = 'https://links-management-tool.onrender.com';
+        
+        async function checkEndpoint(url, method = 'GET', body = null) {
+            const results = document.getElementById('results');
+            
+            try {
+                const options = {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    }
+                };
+                
+                if (body) {
+                    options.body = JSON.stringify(body);
+                }
+                
+                const response = await fetch(url, options);
+                
+                let statusClass = 'success';
+                let statusText = '✅ Success';
+                
+                if (!response.ok) {
+                    statusClass = 'error';
+                    statusText = `❌ Error ${response.status}`;
+                } else if (response.status === 403) {
+                    statusClass = 'warning';
+                    statusText = '⚠️ Forbidden (but server is running)';
+                }
+                
+                const responseText = await response.text();
+                
+                results.innerHTML += `
+                    <div class="status ${statusClass}">
+                        <h3>${statusText} - ${method} ${url}</h3>
+                        <p><strong>Status:</strong> ${response.status} ${response.statusText}</p>
+                        <p><strong>Headers:</strong></p>
+                        <pre>${JSON.stringify(Object.fromEntries(response.headers), null, 2)}</pre>
+                        <p><strong>Response:</strong></p>
+                        <pre>${responseText.substring(0, 500)}${responseText.length > 500 ? '...' : ''}</pre>
+                    </div>
+                `;
+                
+                return { success: response.ok, status: response.status, data: responseText };
+                
+            } catch (error) {
+                results.innerHTML += `
+                    <div class="status error">
+                        <h3>❌ Network Error - ${method} ${url}</h3>
+                        <p><strong>Error:</strong> ${error.message}</p>
+                    </div>
+                `;
+                return { success: false, error: error.message };
+            }
+        }
+        
+        async function checkRoot() {
+            await checkEndpoint(BASE_URL + '/');
+        }
+        
+        async function checkAPI() {
+            await checkEndpoint(BASE_URL + '/api');
+        }
+        
+        async function checkLogin() {
+            await checkEndpoint(BASE_URL + '/api/auth/login', 'OPTIONS');
+            await checkEndpoint(BASE_URL + '/api/auth/login', 'POST', {
+                username: 'test',
+                password: 'test'
+            });
+        }
+        
+        async function checkSearch() {
+            await checkEndpoint(BASE_URL + '/api/links/search?q=test');
+        }
+        
+        async function checkAllEndpoints() {
+            document.getElementById('results').innerHTML = '<h2>🔄 Checking all endpoints...</h2>';
+            
+            console.log('Starting comprehensive backend check...');
+            
+            // Check root
+            await checkRoot();
+            
+            // Check API base
+            await checkAPI();
+            
+            // Check login endpoints
+            await checkLogin();
+            
+            // Check search endpoint
+            await checkSearch();
+            
+            // Additional checks
+            await checkEndpoint(BASE_URL + '/api/links');
+            await checkEndpoint(BASE_URL + '/api/auth/register-super-admin', 'OPTIONS');
+            
+            document.getElementById('results').innerHTML += `
+                <div class="status info">
+                    <h3>📊 Check Complete</h3>
+                    <p>Backend status check completed. Review the results above.</p>
+                    <p><strong>Expected Behavior:</strong></p>
+                    <ul>
+                        <li>Root (/) should return 404 (normal for Spring Boot API)</li>
+                        <li>/api should return 403 or 404 (normal)</li>
+                        <li>/api/auth/login OPTIONS should return 200 (CORS preflight)</li>
+                        <li>/api/links/search should return data or 401 (needs auth)</li>
+                    </ul>
+                </div>
+            `;
+        }
+        
+        // Auto-run on page load
+        window.onload = () => {
+            checkAllEndpoints();
+        };
+    </script>
+</body>
+</html>
