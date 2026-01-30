@@ -13,12 +13,14 @@ import java.util.Map;
 /**
  * Health Check and Root Controller
  * Provides basic health status and root endpoints
+ * Note: Application runs on /api context path
  */
 @RestController
 public class HealthController {
     
     /**
-     * Root endpoint - eliminates 404 error
+     * Root endpoint (relative to context path) - eliminates 404 error
+     * Maps to: https://links-management-tool.onrender.com/api/
      */
     @GetMapping("/")
     public ResponseEntity<Map<String, Object>> root() {
@@ -27,41 +29,20 @@ public class HealthController {
         response.put("service", "LMT Smart Link Finder API");
         response.put("version", "1.0.0");
         response.put("timestamp", Instant.now().toString());
+        response.put("context_path", "/api");
         response.put("endpoints", new String[]{
             "/health - Health check",
-            "/api/auth/login - Authentication",
-            "/api/links/search - Search links",
-            "/api/links - Link management"
+            "/auth/login - Authentication",
+            "/links/search - Search links",
+            "/links - Link management"
         });
         
         return ResponseEntity.ok(response);
     }
     
     /**
-     * API base endpoint - provides API information
-     */
-    @GetMapping("/api")
-    public ResponseEntity<Map<String, Object>> apiInfo() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("service", "LMT Smart Link Finder API");
-        response.put("version", "1.0.0");
-        response.put("status", "RUNNING");
-        response.put("timestamp", Instant.now().toString());
-        response.put("description", "Links Management Tool API for smart link management");
-        response.put("available_endpoints", new String[]{
-            "POST /api/auth/login - User authentication",
-            "GET /api/links/search - Search links",
-            "GET /api/links - Get all links (authenticated)",
-            "POST /api/links - Create link (authenticated)",
-            "PUT /api/links/{id} - Update link (authenticated)",
-            "DELETE /api/links/{id} - Delete link (authenticated)"
-        });
-        
-        return ResponseEntity.ok(response);
-    }
-    
-    /**
-     * Basic health check endpoint - no dependencies
+     * Health check endpoint - primary health monitoring
+     * Maps to: https://links-management-tool.onrender.com/api/health
      */
     @GetMapping("/health")
     public ResponseEntity<Map<String, Object>> health() {
@@ -71,12 +52,14 @@ public class HealthController {
         response.put("application", "LMT Smart Link Finder");
         response.put("version", "1.0.0");
         response.put("service", "Links Management Tool");
+        response.put("context_path", "/api");
         
         return ResponseEntity.ok(response);
     }
     
     /**
      * Simple detailed health check - no complex monitoring
+     * Maps to: https://links-management-tool.onrender.com/api/health/detailed
      */
     @GetMapping("/health/detailed")
     public ResponseEntity<Map<String, Object>> detailedHealth() {
@@ -86,6 +69,7 @@ public class HealthController {
         response.put("application", "LMT Smart Link Finder");
         response.put("version", "1.0.0");
         response.put("service", "Links Management Tool");
+        response.put("context_path", "/api");
         response.put("message", "Application is running smoothly");
         response.put("uptime", System.currentTimeMillis());
         
